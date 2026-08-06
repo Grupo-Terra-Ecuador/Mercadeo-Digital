@@ -1,0 +1,1409 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grupo TERRA · Dashboard Técnico Web V15 · Datos automatizados GA4 y Search Console</title>
+<style>
+:root{
+  --bg:#0b0f1a;--surface:#111827;--surface2:#172033;--surface3:#1d273d;
+  --border:#25344e;--border2:#33445f;--text:#f1f5f9;--muted:#94a3b8;
+  --muted2:#64748b;--orange:#ff7900;--orange2:#ffad5e;--green:#22c55e;
+  --red:#ef4444;--yellow:#f59e0b;--blue:#60a5fa;--purple:#a78bfa;--tomato:#ff6347;--tomato2:#ff8a73;
+  --radius:16px;--shadow:0 18px 60px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--blue);text-decoration:none}
+button,input,select{font:inherit}
+.shell{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+.top{position:sticky;top:0;z-index:50;grid-column:1/-1;min-height:58px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center}
+.brand{width:230px;min-height:58px;display:flex;gap:10px;align-items:center;padding:0 18px;border-right:1px solid var(--border)}
+.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--orange),#ffd09a);display:grid;place-items:center}
+.brand b{display:block;font-size:14px}.brand span{display:block;color:var(--muted2);font-size:10px;font-weight:800}
+.topmid{flex:1;display:flex;gap:10px;align-items:center;padding:0 18px;min-width:0}
+.pill{display:inline-flex;gap:6px;align-items:center;border:1px solid rgba(255,121,0,.35);background:rgba(255,121,0,.11);color:var(--orange2);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:850;white-space:nowrap}
+.topstatus{font-size:12px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topright{display:flex;gap:7px;align-items:center;padding:8px 14px 8px 0;flex-wrap:wrap;justify-content:flex-end}
+.btn{appearance:none;border:1px solid var(--border2);background:transparent;color:var(--muted);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:850;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--surface2);color:var(--text)}.btn.accent{background:var(--orange);border-color:var(--orange);color:#fff}.btn.accent:hover{background:#e86c00}.btn:disabled{opacity:.35;cursor:not-allowed}
+.menu-toggle,.menu-close{display:none;appearance:none;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:10px;cursor:pointer;place-items:center;transition:.15s}
+.menu-toggle{width:40px;height:40px;margin-left:10px;font-size:20px;line-height:1}
+.menu-toggle:hover,.menu-close:hover{border-color:var(--orange);color:var(--orange2);background:rgba(255,121,0,.1)}
+.mobile-side-head{display:none}
+.mobile-overlay{position:fixed;inset:0;z-index:105;background:rgba(3,7,18,.72);backdrop-filter:blur(3px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease,visibility .22s ease}
+.mobile-overlay.show{opacity:1;visibility:visible;pointer-events:auto}
+.side{position:sticky;top:58px;height:calc(100vh - 58px);overflow:auto;background:var(--surface);border-right:1px solid var(--border);padding:14px 10px}
+.navlabel{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted2);font-weight:900;padding:10px 10px 6px}
+.nav a{position:relative;display:flex;gap:9px;align-items:center;padding:9px 10px;color:var(--muted2);border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;margin:1px 0;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease}
+.nav a:hover{background:rgba(255,99,71,.09);color:var(--tomato2)}
+.nav a.active{background:linear-gradient(90deg,rgba(255,99,71,.28),rgba(255,99,71,.12));border-color:rgba(255,99,71,.34);color:#fff;box-shadow:0 8px 24px rgba(255,99,71,.13),inset 3px 0 0 var(--tomato);transform:translateX(2px)}
+.nav a.active:after{content:"";width:7px;height:7px;margin-left:auto;border-radius:50%;background:var(--tomato);box-shadow:0 0 0 4px rgba(255,99,71,.14)}
+.nav a[hidden],.navlabel[hidden],.section[hidden]{display:none!important}
+#googlePickers[hidden]{display:none!important}
+.chart-card[hidden],.card[hidden],.kpi[hidden]{display:none!important}
+.grid3.dynamic-grid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.chart-grid.dynamic-grid{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+.content{padding:24px 26px 60px;min-width:0}
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#13203a,#0f172a 58%,#1a1000);border:1px solid var(--border2);border-radius:22px;padding:28px;margin-bottom:18px}
+.hero:after{content:"";position:absolute;right:-90px;top:-90px;width:320px;height:320px;background:radial-gradient(circle,rgba(255,121,0,.28),transparent 66%)}
+.hero>*{position:relative;z-index:1}.eyebrow{display:inline-flex;gap:7px;align-items:center;color:var(--orange2);background:rgba(255,121,0,.11);border:1px solid rgba(255,121,0,.3);border-radius:999px;font-size:11px;font-weight:900;padding:6px 13px;margin-bottom:14px}
+.hero h1{font-size:30px;line-height:1.12;margin:0 0 8px}.hero h1 span{color:var(--orange)}.hero p{color:var(--muted);max-width:820px;margin:0 0 20px}
+.drop{border:2px dashed rgba(255,121,0,.38);background:rgba(255,121,0,.06);border-radius:16px;padding:24px;text-align:center;cursor:pointer}.drop:hover{border-color:var(--orange);background:rgba(255,121,0,.1)}.drop strong{display:block;font-size:15px}.drop span{display:block;color:var(--muted2);font-size:12px;margin-top:4px}
+.statusBanner{display:flex;gap:10px;align-items:flex-start;margin-top:13px;border-radius:13px;padding:12px 14px;font-weight:750;font-size:13px}.statusBanner.warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--yellow)}.statusBanner.ok{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:var(--green)}.statusBanner.bad{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+.scope{border:1px solid rgba(96,165,250,.25);background:rgba(96,165,250,.07);color:#bddcff;border-radius:13px;padding:12px 14px;font-size:12px;line-height:1.55;margin-top:12px}
+.section{margin:24px 0;scroll-margin-top:78px}.sectionhd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}.sectionhd h2{font-size:18px;margin:0 0 3px}.sectionhd p{margin:0;color:var(--muted2);font-size:12px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card,.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}.cardtitle{font-size:13px;font-weight:900;color:var(--text);margin-bottom:10px;display:flex;gap:7px;align-items:center}.cardsub{font-size:11px;color:var(--muted2);margin:-4px 0 12px}
+.kpi{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}.kpi:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--orange)}.kpi.green:before{background:var(--green)}.kpi.blue:before{background:var(--blue)}.kpi.red:before{background:var(--red)}.kpi.yellow:before{background:var(--yellow)}.kpi.purple:before{background:var(--purple)}.kpi .lbl{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted2);margin-bottom:8px}.kpi .val{font-size:28px;font-weight:950;line-height:1;color:var(--text)}.kpi .hint{font-size:11px;color:var(--muted2);margin-top:6px}
+.settings{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.field label{display:block;font-size:10px;color:var(--muted2);font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}.field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:9px 10px;outline:none;color-scheme:dark}.field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,121,0,.15)}
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:4px 9px;font-size:11px;font-weight:850;background:rgba(148,163,184,.12);color:var(--muted)}.tag.ok{background:rgba(34,197,94,.12);color:var(--green)}.tag.warn{background:rgba(245,158,11,.12);color:var(--yellow)}.tag.bad{background:rgba(239,68,68,.12);color:var(--red)}.tag.info{background:rgba(96,165,250,.12);color:var(--blue)}.tag.date{background:rgba(167,139,250,.13);color:var(--purple)}
+.barlist{display:grid;gap:9px}.barrow{display:grid;grid-template-columns:185px 1fr 88px;gap:10px;align-items:center}.barlabel{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bartrack{height:8px;border-radius:999px;background:var(--border2);overflow:hidden}.barfill{height:100%;background:linear-gradient(90deg,var(--orange),var(--orange2));border-radius:999px;min-width:2px}.barval{text-align:right;color:var(--muted);font-weight:850;font-size:12px}
+.tablewrap{overflow:auto;border:1px solid var(--border);border-radius:13px;scrollbar-width:thin;scrollbar-color:var(--orange) rgba(255,255,255,.05)}
+.tablewrap.limit-10{max-height:438px}
+table{width:100%;border-collapse:collapse;background:transparent}th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;font-size:12px;color:var(--muted)}th{position:sticky;top:0;background:#151e30;color:var(--muted2);font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:950;z-index:1}tr:hover td{background:rgba(255,255,255,.025)}td.num,th.num{text-align:right;white-space:nowrap}
+.tablewrap::-webkit-scrollbar,.chart-scroll::-webkit-scrollbar,.legend::-webkit-scrollbar,.side::-webkit-scrollbar{width:10px;height:10px}
+.tablewrap::-webkit-scrollbar-track,.chart-scroll::-webkit-scrollbar-track,.legend::-webkit-scrollbar-track,.side::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:999px}
+.tablewrap::-webkit-scrollbar-thumb,.chart-scroll::-webkit-scrollbar-thumb,.legend::-webkit-scrollbar-thumb,.side::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--border2),var(--orange));border-radius:999px;border:2px solid rgba(11,15,26,.7)}
+.tablewrap::-webkit-scrollbar-thumb:hover,.chart-scroll::-webkit-scrollbar-thumb:hover,.legend::-webkit-scrollbar-thumb:hover,.side::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--orange2),var(--orange))}
+.empty{border:1px dashed var(--border2);border-radius:13px;padding:18px;text-align:center;color:var(--muted2);font-size:12px;background:rgba(255,255,255,.015)}.ai{border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.08);color:#a9d0ff;border-radius:13px;padding:12px 14px;font-size:12px;line-height:1.55}.safeerr{border-left:4px solid var(--red);background:rgba(239,68,68,.08);padding:10px 12px;border-radius:10px;color:#fecaca;font-size:12px;margin:8px 0}
+.ai-accordion{border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.08);border-radius:13px;margin-top:12px;overflow:hidden}.ai-accordion summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;color:#a9d0ff;font-size:12px;font-weight:850;user-select:none}.ai-accordion summary::-webkit-details-marker{display:none}.ai-accordion .chevron-mini{font-size:11px;color:#a9d0ff;transition:.15s}.ai-accordion[open] .chevron-mini{transform:rotate(180deg)}.ai-accordion .ai-body{padding:0 14px 13px;color:#a9d0ff;font-size:12px;line-height:1.55;border-top:1px solid rgba(96,165,250,.18);padding-top:10px}
+.filegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px}.filecard{background:rgba(255,255,255,.035);border:1px solid var(--border);border-radius:12px;padding:11px}.filecard strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;margin-bottom:6px}.status{display:flex;gap:5px;flex-wrap:wrap}
+details.validation{border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,.02);margin:8px 0;overflow:hidden}details.validation summary{cursor:pointer;padding:12px 13px;font-weight:850;color:var(--muted)}details.validation .inside{padding:0 13px 13px;color:var(--muted2);font-size:12px;overflow-wrap:anywhere}
+.tip,.tiplink{display:inline-flex;align-items:center;gap:4px;border-bottom:1px dotted var(--muted2);cursor:help;color:inherit}.tipi{display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.1);font-size:10px;color:var(--muted2);font-weight:950}.floating{position:fixed;z-index:999999;max-width:min(520px,calc(100vw - 28px));background:#1e293b;color:#f8fafc;border:1px solid var(--border2);border-radius:13px;box-shadow:var(--shadow);padding:13px 15px;font-size:12px;line-height:1.55;font-weight:650;opacity:0;pointer-events:none;transform:translateY(6px);transition:.12s;overflow-wrap:anywhere;white-space:pre-line}
+.trend-wrap{width:100%;overflow-x:auto}.trend-svg{width:100%;height:260px;display:block;min-width:520px}.trend-hover{cursor:crosshair}.trend-hover:hover{fill:rgba(255,255,255,.05)!important}
+.trend-controls{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}.trend-controls .field{width:150px}.trend-controls .field label{display:block;font-size:10px;color:var(--muted2);font-weight:900;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}.trend-controls .field input{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:10px;padding:9px 10px;outline:none;color-scheme:dark}
+.card-export-check{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:10px;font-size:10px;color:var(--muted2);font-weight:800;text-transform:uppercase;letter-spacing:.05em;cursor:pointer;user-select:none}.card-export-check input{cursor:pointer;accent-color:var(--orange);width:13px;height:13px}
+.export-card.export-off>*:not(.card-export-check){opacity:.35;filter:grayscale(.5)}
+.export-card.export-off>summary{opacity:1!important;filter:none!important}
+.ai-accordion .card-export-check{display:inline-flex;margin:0 0 0 12px;vertical-align:middle}
+.exported .card-export-check{display:none!important}
+.detail-accordion{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 1px 0 rgba(255,255,255,.03) inset;margin-top:12px}.detail-accordion summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:18px;font-size:13px;font-weight:900;color:var(--text);user-select:none}.detail-accordion summary::-webkit-details-marker{display:none}.detail-accordion .chevron-mini{font-size:12px;color:var(--muted);transition:.15s}.detail-accordion[open] .chevron-mini{transform:rotate(180deg)}.detail-accordion .detail-body{padding:0 18px 18px}.detail-accordion .detail-body .cardsub{margin:-4px 0 12px}
+.legend-item.trend-toggle{cursor:pointer}.legend-item.legend-off{opacity:.4}.legend-item.legend-off .legend-label{text-decoration:line-through}
+.heatmap-wrap{width:100%;overflow-x:auto}.heatmap-grid{display:grid;grid-template-columns:38px repeat(24,minmax(20px,1fr));gap:2px;min-width:760px;align-items:center}.heatmap-hour-label{font-size:8px;color:var(--muted2);text-align:center}.heatmap-day-label{font-size:10px;color:var(--muted2);font-weight:800;text-align:right;padding-right:6px}.heatmap-cell{height:16px;border-radius:3px;cursor:help}
+.heatmap-scale{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:10px;color:var(--muted2);font-weight:700}.heatmap-scale-bar{flex:1;max-width:220px;height:8px;border-radius:4px;background:linear-gradient(90deg,rgba(255,121,0,.06),rgba(255,121,0,.94))}.floating.show{opacity:1;transform:translateY(0)}
+.ga4-snapshot-row{display:flex;flex-wrap:wrap;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}.ga4-snapshot-item{flex:1 1 150px;padding:16px 20px;border-right:1px solid var(--border)}.ga4-snapshot-item:last-child{border-right:none}.ga4-snapshot-item .lbl{font-size:12px;color:var(--muted2);margin-bottom:8px}.ga4-snapshot-item .val{font-size:26px;font-weight:800;color:var(--text);line-height:1.2}@media(max-width:720px){.ga4-snapshot-item{flex:1 1 45%;border-right:none;border-bottom:1px solid var(--border)}}
+.kpi-tip{position:absolute;top:10px;right:10px;border-bottom:0;z-index:2}.kpi-tip .tipi{width:18px;height:18px;font-size:11px;background:rgba(255,255,255,.08)}
+.note{font-size:11px;color:var(--muted2);margin-top:10px}.metric-source{display:inline-flex;gap:6px;align-items:center;color:var(--muted2);font-size:11px;margin-top:8px}.metric-source:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue)}
+.accordion{border:1px solid var(--border);border-radius:18px;background:rgba(255,255,255,.025);overflow:hidden;margin:0;box-shadow:0 1px 0 rgba(255,255,255,.03) inset}.accordion>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;cursor:pointer;background:linear-gradient(90deg,rgba(255,121,0,.10),rgba(255,255,255,.015));border-bottom:1px solid transparent}.accordion>summary::-webkit-details-marker{display:none}.accordion[open]>summary{border-bottom-color:var(--border)}.module-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:950;color:var(--text)}.chevron{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;background:rgba(255,255,255,.06);color:var(--muted);transition:.15s}.accordion[open] .chevron{transform:rotate(180deg);color:var(--orange2)}.module-body{padding:16px}
+.exported .top,.exported .side,.exported #carga,.exported .settingsPanel{display:none!important}.exported .shell{display:block}.exported .content{padding:20px;max-width:1400px;margin:auto}.exported .accordion{margin-bottom:16px}.exported .accordion>summary{cursor:default}.exported .chevron{display:none}
+@media(max-width:1180px){.grid5{grid-template-columns:repeat(3,1fr)}.grid4,.settings{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){
+  body.menu-open{overflow:hidden}
+  .shell{display:block}
+  .top{position:sticky;top:0;z-index:100;display:flex;flex-wrap:wrap;min-height:58px}
+  .menu-toggle{display:grid;flex:0 0 40px}
+  .brand{width:auto;min-width:0;flex:1;border-right:0;padding:0 10px}
+  .brand b{font-size:13px}.brand span{font-size:9px}
+  .topmid{display:none}
+  .topright{width:100%;padding:8px 10px;border-top:1px solid var(--border);justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;background:rgba(17,24,39,.98)}
+  .topright::-webkit-scrollbar{display:none}
+  .topright .btn{flex:0 0 auto;white-space:nowrap}
+  .side{position:fixed;inset:0 auto 0 0;top:0;z-index:120;width:min(86vw,320px);height:100dvh;padding:0 10px 18px;transform:translateX(-105%);transition:transform .25s ease;box-shadow:18px 0 50px rgba(0,0,0,.45);border-right:1px solid var(--border2);overflow:auto;overscroll-behavior:contain}
+  .side.open{transform:translateX(0)}
+  .mobile-side-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:64px;margin:0 -10px 10px;padding:0 14px;background:rgba(17,24,39,.98);border-bottom:1px solid var(--border)}
+  .mobile-side-title{display:flex;align-items:center;gap:9px;font-weight:900;color:var(--text)}
+  .mobile-side-title small{display:block;color:var(--muted2);font-size:9px;font-weight:750}
+  .menu-close{display:grid;width:38px;height:38px;font-size:19px}
+  .nav a{padding:12px 11px;font-size:14px;border:1px solid transparent}
+  .nav a.active{border-color:rgba(255,99,71,.42);box-shadow:0 10px 28px rgba(255,99,71,.16),inset 4px 0 0 var(--tomato)}
+  .content{padding:16px 12px 48px}
+  .hero{padding:22px 18px;border-radius:16px}
+  .hero h1{font-size:25px}
+  .grid5,.grid4,.grid3,.grid2,.settings{grid-template-columns:1fr}
+  .barrow{grid-template-columns:120px 1fr 65px}
+  .section{scroll-margin-top:120px}
+}
+@media print{.side,.top,.hero,.settingsPanel,.btn{display:none!important}.shell{display:block}.content{padding:0}.card,.panel,.kpi,.accordion{break-inside:avoid}body{background:white;color:black}}
+
+/* ===== V14.2: selección de exportación, visualizaciones y escalas ===== */
+.summary-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.module-select{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(255,121,0,.28);background:rgba(255,121,0,.08);color:var(--orange2);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900;cursor:pointer;user-select:none}
+.module-select input{accent-color:var(--orange);width:14px;height:14px;margin:0}.module-select:has(input:disabled){opacity:.4;cursor:not-allowed}
+.selectionbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}.selectionbar .btn{padding:6px 10px;font-size:11px}
+.exportPanel{margin-top:12px}.export-status{font-size:12px;color:var(--muted);margin-top:10px}
+.chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;min-width:0}
+.chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}.chart-head h3{font-size:13px;margin:0;color:var(--text)}.chart-head p{font-size:11px;color:var(--muted2);margin:3px 0 0}
+.chart-scroll{max-height:520px;overflow:auto;padding-right:5px;scrollbar-width:thin;scrollbar-color:var(--orange) rgba(255,255,255,.05)}
+.chart-scroll.limit-10{max-height:420px}
+.barlist.rich{gap:10px}.barlist.rich .barrow{grid-template-columns:minmax(125px,210px) 1fr minmax(92px,120px)}
+.barlist.rich .barrow.tip{display:grid;border:0;cursor:help}.barlist.rich .barval{line-height:1.15}.barlist.rich .barval small{display:block;color:var(--muted2);font-size:10px;font-weight:750;margin-top:3px}
+.scale-note{display:flex;align-items:center;gap:6px;color:var(--muted2);font-size:10px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(51,68,95,.55)}
+.donut-layout{display:grid;grid-template-columns:minmax(170px,220px) 1fr;gap:16px;align-items:center}.donut-wrap{display:grid;place-items:center;min-height:220px}.donut{position:relative;width:190px;height:190px;border-radius:50%;background:conic-gradient(var(--segments));box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}.donut:after{content:"";position:absolute;inset:31px;border-radius:50%;background:var(--surface);border:1px solid var(--border)}.donut-center{position:absolute;z-index:2;inset:0;display:grid;place-content:center;text-align:center;pointer-events:none}.donut-center b{font-size:24px;line-height:1}.donut-center span{color:var(--muted2);font-size:10px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.legend{display:flex;flex-wrap:wrap;gap:8px;align-content:flex-start;max-height:275px;overflow:auto;padding-right:2px;scrollbar-width:thin;scrollbar-color:var(--orange) rgba(255,255,255,.05)}.legend-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:center;flex:1 1 235px;min-width:220px;border:1px solid rgba(51,68,95,.55);border-radius:10px;padding:8px 10px;cursor:help;background:rgba(255,255,255,.022)}.legend-swatch{width:9px;height:9px;border-radius:3px}.legend-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:11px}.legend-value{text-align:right;color:var(--text);font-size:11px;font-weight:850}.legend-value small{display:block;color:var(--muted2);font-size:9px;font-weight:700}
+.stacked-chart{height:44px;border-radius:12px;overflow:hidden;display:flex;background:var(--border2);border:1px solid var(--border2)}.stack-segment{height:100%;display:flex;align-items:center;justify-content:center;min-width:2px;color:#fff;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;cursor:help}.stack-legend{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.stack-item{border:1px solid var(--border);border-radius:10px;padding:9px 10px;background:rgba(255,255,255,.025)}.stack-item b{display:block;font-size:15px}.stack-item span{font-size:10px;color:var(--muted2)}
+.scatter-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,rgba(96,165,250,.04),rgba(255,255,255,.01));padding:8px}.scatter-svg{display:block;min-width:720px;width:100%;height:360px}.gridline{stroke:#25344e;stroke-width:1}.axisline{stroke:#64748b;stroke-width:1}.axistext{fill:#64748b;font-size:10px}.plot-point{stroke:rgba(255,255,255,.7);stroke-width:1;cursor:help;transition:.12s}.plot-point:hover{stroke:#fff;stroke-width:2;filter:brightness(1.25)}
+.mini-metric{display:block;color:var(--muted2);font-size:10px;font-weight:750;margin-top:3px}
+.summary-insight{min-height:160px}.summary-insight .val{font-size:23px;line-height:1.15;overflow-wrap:anywhere}.summary-insight .summary-meta{display:grid;gap:5px;margin-top:12px}.summary-row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid rgba(51,68,95,.55);padding-top:6px;color:var(--muted);font-size:11px}.summary-row b{color:var(--text);text-align:right}.city-list{display:grid;gap:4px;margin-top:8px}.city-chip{display:flex;justify-content:space-between;gap:8px;border-radius:8px;background:rgba(255,255,255,.035);padding:5px 7px;font-size:10px;color:var(--muted)}.city-chip b{color:var(--text)}
+.chart-empty{min-height:220px;display:grid;place-items:center}
+.exported .module-select,.exported .selectionbar,.exported .exportPanel,.exported .summary-actions .module-select{display:none!important}
+.exported .top,.exported .side,.exported #carga,.exported .settingsPanel{display:none!important}
+@media(max-width:1050px){.chart-grid{grid-template-columns:1fr}.donut-layout{grid-template-columns:1fr}.donut-wrap{min-height:205px}}
+@media(max-width:720px){.accordion>summary{align-items:flex-start}.summary-actions{align-items:flex-end;flex-direction:column}.module-select{font-size:10px}.barlist.rich .barrow{grid-template-columns:105px 1fr 82px}.stack-legend{grid-template-columns:1fr}.donut{width:165px;height:165px}.donut:after{inset:28px}}
+
+
+/* ===== V15: menú dinámico dentro del HTML exportado + datos automatizados GA4/Search Console ===== */
+body.exported .shell{display:grid!important;grid-template-columns:230px minmax(0,1fr);min-height:100vh}
+body.exported .top{display:flex!important}
+body.exported .side{display:block!important}
+body.exported .content{grid-column:2;padding:24px 26px 60px;max-width:none;margin:0}
+body.exported .topright{display:none!important}
+body.exported .topmid{min-width:0}
+body.exported .accordion>summary{cursor:pointer}
+body.exported .chevron{display:grid!important}
+body.exported .module-select,body.exported .selectionbar,body.exported .exportPanel{display:none!important}
+body.exported .hero{scroll-margin-top:78px}
+body.exported .export-nav-note{padding:10px;color:var(--muted2);font-size:11px;line-height:1.45;border-top:1px solid var(--border);margin-top:12px}
+@media(max-width:900px){
+  body.exported .shell{display:block!important}
+  body.exported .content{grid-column:auto;padding:16px 12px 48px}
+  body.exported .side{display:block!important}
+  body.exported .topmid{display:none}
+}
+@media print{
+  body.exported .top,body.exported .side,body.exported .mobile-overlay{display:none!important}
+  body.exported .shell{display:block!important}
+  body.exported .content{padding:0!important;max-width:none!important}
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <button id="mobileMenuBtn" class="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú de navegación">☰</button>
+  <div class="brand"><div class="logo">🌾</div><div><b>Grupo TERRA</b><span>Dashboard Técnico Web V15 · Datos automatizados GA4 y Search Console</span></div></div>
+  <div class="topmid"><span class="pill">● Analítica técnica</span><span id="topStatus" class="topstatus">Sin datos cargados</span></div>
+  <div class="topright">
+    <button class="btn" onclick="pickFiles()">📂 Cargar CSV</button>
+    <span class="tip" data-tip="Selecciona uno o varios CSV de GA4 o Search Console. El sistema detecta separador, encabezados desplazados, columnas, período del reporte y calidad de lectura automáticamente."><span class="tipi">i</span></span>
+    <button id="processBtn" class="btn accent" onclick="processDashboard()" disabled>▶ Procesar</button>
+    <button id="exportBtn" class="btn" onclick="exportProcessedHTML()" disabled>💾 Exportar HTML</button>
+    <button class="btn" onclick="resetAll()">↺ Reiniciar</button>
+    <input id="csvInput" type="file" accept=".csv,text/csv" multiple hidden>
+  </div>
+</header>
+<aside id="sidebar" class="side" aria-label="Navegación principal">
+  <div class="mobile-side-head">
+    <div class="mobile-side-title"><span>🌾</span><span>Menú del dashboard<small>Navegación por módulos</small></span></div>
+    <button id="mobileMenuClose" class="menu-close" type="button" aria-label="Cerrar menú">✕</button>
+  </div>
+  <nav class="nav">
+    <div class="navlabel">Carga</div>
+    <a href="#carga">📂 Archivos</a>
+    <a href="#resumen">📌 Resumen</a>
+    <div class="navlabel">Analítica</div>
+    <a href="#trafico">📣 Tráfico por canales</a>
+    <a href="#usuarios">👥 Usuarios y fuentes</a>
+    <a href="#audiencias">🎯 Audiencias</a>
+    <a href="#paginas">📄 Páginas</a>
+    <a href="#tecnologia">💻 Tecnología</a>
+    <a href="#organico">🔎 Búsqueda orgánica</a>
+    <a href="#demografia">🌎 Demografía</a>
+    <div class="navlabel">Control</div>
+    <a href="#validacion">⚙️ Validación</a>
+    <a href="#fuentes-dashboard">📚 Reportes procesados</a>
+  </nav>
+</aside>
+<div id="mobileMenuOverlay" class="mobile-overlay" aria-hidden="true"></div>
+<main class="content">
+<section id="carga" class="hero">
+  <div class="eyebrow">✅ Versión 15 · Datos automatizados GA4 y Search Console · navegación activa · módulos dinámicos según datos</div>
+  <h1>Dashboard de <span>analítica web técnica</span></h1>
+  <p>Visualiza únicamente adquisición, usuarios, audiencias, fuentes, páginas, dispositivos, navegadores, rebote, consultas orgánicas y demografía. Se eliminaron embudos, leads, estimaciones comerciales, ecommerce, marcas y diagnósticos de ventas.</p>
+  <div id="statusBanner" class="statusBanner warn"><span>⚠️</span><span>Sin datos cargados. Selecciona los CSV y presiona Procesar.</span></div>
+  <div class="scope"><b>Alcance técnico:</b> adquisición de tráfico por canales; usuarios totales, nuevos y recurrentes; audiencias; fuente/medio; páginas más visitadas; dispositivo; navegador; tasa de rebote; consultas de búsqueda orgánica; sexo, provincia/región, país y ciudad.</div>
+</section>
+
+<section class="section settingsPanel">
+  <div class="card" id="googleConnectCard">
+    <div class="cardtitle">🔗 Conectar con Google Analytics y Search Console (beta)</div>
+    <div class="cardsub">Alternativa a subir CSV manualmente: trae los datos directamente desde tu cuenta de Google. Requiere que este archivo esté servido desde un origen web (no funciona abriéndolo con doble clic) y que el Client ID de Google Cloud esté configurado. La audiencia (módulo "Audiencias") no está disponible aún por esta vía; usa un CSV para ese módulo si lo necesitas.</div>
+    <div class="selectionbar">
+      <button id="googleConnectBtn" class="btn accent" type="button" onclick="connectGoogle()">🔗 Conectar con Google</button>
+      <button id="googleDisconnectBtn" class="btn" type="button" onclick="disconnectGoogle()" hidden>Desconectar</button>
+    </div>
+    <div id="googleStatus" class="export-status">No conectado. Los datos seguirán viniendo de los CSV mientras no conectes una cuenta.</div>
+    <div id="googlePickers" class="settings" style="margin-top:12px" hidden>
+      <div class="field"><label>Propiedad de GA4</label><select id="ga4PropertySelect"></select></div>
+      <div class="field"><label>Sitio de Search Console</label><select id="gscSiteSelect"></select></div>
+      <div class="field"><label>&nbsp;</label><button class="btn accent" type="button" onclick="processFromGoogle()">▶ Traer datos de Google</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cardtitle">📅 Filtro de fechas responsable</div>
+    <div class="settings">
+      <div class="field"><label>Desde</label><input id="dateFrom" type="date"></div>
+      <div class="field"><label>Hasta</label><input id="dateTo" type="date"></div>
+      <div class="field"><label>Aplicar</label><button class="btn accent" type="button" onclick="applyDateFilter()">Aplicar filtro</button></div>
+      <div class="field"><label>Rango CSV</label><button class="btn" type="button" onclick="fillDetectedDateRange()">Usar rango detectado</button></div>
+    </div>
+    <div id="dateFilterStatus" class="ai" style="margin-top:12px"><b>Nota:</b> si un CSV está agregado para todo un período y no incluye una columna Fecha, no es posible recortarlo por día sin alterar la veracidad del dato. En ese caso se conserva el total agregado (modo seguro).</div>
+  </div>
+  <div class="card exportPanel">
+    <div class="cardtitle">💾 Configuración del informe HTML</div>
+    <div class="cardsub">Marca o desmarca “Incluir en HTML” en el encabezado de cada módulo. Las gráficas, tablas y comentarios seleccionados se conservarán en el informe.</div>
+    <div class="selectionbar">
+      <button class="btn" type="button" onclick="setAllExportSections(true)">✅ Seleccionar todo</button>
+      <button class="btn" type="button" onclick="setAllExportSections(false)">⬜ Limpiar selección</button>
+      <button class="btn" type="button" onclick="toggleAllAccordions(true)">Expandir módulos</button>
+      <button class="btn" type="button" onclick="toggleAllAccordions(false)">Contraer módulos</button>
+    </div>
+    <div id="exportSelectionStatus" class="export-status">7 módulos de analítica seleccionados.</div>
+  </div>
+</section>
+
+<section id="resumen" class="section"><details class="accordion" open><summary><span class="module-title">📌 Resumen técnico</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="card" style="margin-bottom:12px"><div class="cardtitle">Vista rápida GA4<span class="tip" data-tip="Los mismos 4 indicadores que ves en la pantalla de inicio de tu cuenta de Google Analytics, para el mismo período que tengas seleccionado aquí. 'Usuarios activos' no es lo mismo que 'Usuarios totales' de la tarjeta de abajo: activos son quienes tuvieron una sesión con interacción real o al menos un evento; totales incluye también a quienes entraron y no interactuaron. Disponible solo al conectar con Google." style="margin-left:8px"><span class="tipi">i</span></span></div><div id="ga4Snapshot" class="ga4-snapshot-row"><div class="empty">Conecta con Google para ver esta vista.</div></div></div>
+  <div id="kpis" class="grid5"><div class="empty">Sin datos.</div></div>
+  <div class="grid3" style="margin-top:12px">
+    <div id="summaryChannel" class="kpi summary-insight blue"><div class="empty">Sin datos.</div></div>
+    <div id="summaryTech" class="kpi summary-insight purple"><div class="empty">Sin datos.</div></div>
+    <div id="summaryLocation" class="kpi summary-insight green"><div class="empty">Sin datos.</div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Tráfico adquirido a lo largo del tiempo</h3><p>Rango propio de esta gráfica, independiente del Filtro de fechas responsable.</p></div><span class="tip" data-tip="Requiere desglose diario: disponible automáticamente al conectar Google, o si el CSV cargado incluye la columna Fecha. Define aquí el rango que quieres ver; no afecta al resto del dashboard. Pase el cursor sobre la gráfica para ver el detalle de cada día."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="trafficTrendFrom" type="date" onchange="applyTrendRange('trafficTrend')"></div>
+      <div class="field"><label>Hasta</label><input id="trafficTrendTo" type="date" onchange="applyTrendRange('trafficTrend')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('trafficTrend')">Usar rango completo</button>
+    </div>
+    <div id="trafficTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+</div></details></section>
+
+<section id="trafico" class="section"><details class="accordion" open><summary><span class="module-title">📣 Adquisición de tráfico web por canales</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Participación por canal</h3><p>Gráfico circular sobre sesiones o usuarios clasificados.</p></div><span class="tip" data-tip="Escala: cada segmento representa su porcentaje del total de sesiones o usuarios clasificados. Pase el cursor por la leyenda para ver valor y participación."><span class="tipi">i</span></span></div><div id="channelDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Escala comparativa por canal</h3><p>La barra más larga representa el canal con mayor volumen.</p></div><span class="tip" data-tip="Escala relativa: 100% de ancho corresponde al mayor valor del gráfico. Las demás barras se calculan proporcionalmente. El valor exacto y su participación aparecen a la derecha."><span class="tipi">i</span></span></div><div id="channelBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Sesiones a lo largo del tiempo</h3><p>Volumen de sesiones por día (rango propio, independiente del resto del dashboard).</p></div><span class="tip" data-tip="Muestra solo el volumen (Sesiones). Para leer la calidad de esas sesiones —qué tan interesadas estuvieron las personas—, revisa la gráfica 'Tasa de rebote a lo largo del tiempo' justo debajo: ambas juntas dan una lectura completa de cantidad y calidad sin duplicar información en una misma gráfica."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="sessionsTrendFrom" type="date" onchange="applyTrendRange('sessionsTrend')"></div>
+      <div class="field"><label>Hasta</label><input id="sessionsTrendTo" type="date" onchange="applyTrendRange('sessionsTrend')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('sessionsTrend')">Usar rango completo</button>
+    </div>
+    <div id="sessionsTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Tasa de rebote a lo largo del tiempo</h3><p>Rango propio de esta gráfica, independiente del resto del dashboard.</p></div><span class="tip" data-tip="Porcentaje de sesiones sin interacción real. Una subida sostenida suele indicar un problema de contenido, velocidad o desajuste entre el anuncio/canal y la página de destino."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="bounceTrendFrom" type="date" onchange="applyTrendRange('bounceTrend')"></div>
+      <div class="field"><label>Hasta</label><input id="bounceTrendTo" type="date" onchange="applyTrendRange('bounceTrend')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('bounceTrend')">Usar rango completo</button>
+    </div>
+    <div id="bounceTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <details class="detail-accordion"><summary>Detalle técnico por canal <span class="chevron-mini">⌄</span></summary><div class="detail-body"><div id="channelTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+<details class="ai-accordion" open><summary>💡 Lectura técnica <span class="chevron-mini">⌄</span></summary><div id="channelNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="usuarios" class="section"><details class="accordion" open><summary><span class="module-title">👥 Adquisición de usuarios y fuentes de tráfico</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div id="userKpis" class="grid4"><div class="empty">Sin datos.</div></div>
+  <div class="chart-grid" style="margin-top:12px">
+    <div class="chart-card"><div class="chart-head"><div><h3>Composición de usuarios</h3><p>Distribución entre nuevos y recurrentes.</p></div><span class="tip" data-tip="La composición compara usuarios nuevos y recurrentes sobre la base total disponible. Los recurrentes pueden calcularse como Total menos Nuevos cuando GA4 no entrega la métrica directamente."><span class="tipi">i</span></span></div><div id="userComposition"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Principales fuentes / medios</h3><p>Volumen comparado cuando el CSV incluye esta dimensión.</p></div><span class="tip" data-tip="La escala compara usuarios; si no existen usuarios por fuente, utiliza sesiones. La tabla conserva las métricas adicionales disponibles."><span class="tipi">i</span></span></div><div id="sourceBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Usuarios por canal a lo largo del tiempo</h3><p>Rango propio de esta gráfica, independiente del Filtro de fechas responsable.</p></div><span class="tip" data-tip="Requiere desglose diario: disponible automáticamente al conectar Google, o si el CSV cargado incluye la columna Fecha. Define aquí el rango que quieres ver; no afecta al resto del dashboard. Pase el cursor sobre la gráfica para ver el detalle de cada día y canal."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userChannelTrendFrom" type="date" onchange="applyTrendRange('userChannelTrend')"></div>
+      <div class="field"><label>Hasta</label><input id="userChannelTrendTo" type="date" onchange="applyTrendRange('userChannelTrend')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('userChannelTrend')">Usar rango completo</button>
+    </div>
+    <div id="userChannelTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Usuarios: nuevos vs. recurrentes en el tiempo</h3><p>Rango propio de esta gráfica, independiente del resto del dashboard.</p></div><span class="tip" data-tip="Usuarios recurrentes = Usuarios totales − Usuarios nuevos (estimado cuando GA4 no entrega el dato directo). Útil para ver si el crecimiento viene de gente nueva o de que vuelvan los de siempre."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userBreakdownTrendFrom" type="date" onchange="applyTrendRange('userBreakdownTrend')"></div>
+      <div class="field"><label>Hasta</label><input id="userBreakdownTrendTo" type="date" onchange="applyTrendRange('userBreakdownTrend')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('userBreakdownTrend')">Usar rango completo</button>
+    </div>
+    <div id="userBreakdownTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Balance por horas y días de mayor tráfico</h3><p>Rango propio de esta tarjeta, independiente de la gráfica de arriba y del resto del dashboard.</p></div><span class="tip" data-tip="Requiere desglose por hora: disponible automáticamente al conectar con Google. Cada celda del mapa de calor muestra el detalle exacto al pasar el cursor."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userDayHourFrom" type="date" onchange="applyTrendRange('userDayHour')"></div>
+      <div class="field"><label>Hasta</label><input id="userDayHourTo" type="date" onchange="applyTrendRange('userDayHour')"></div>
+      <button class="btn" type="button" onclick="useFullTrendRange('userDayHour')">Usar rango completo</button>
+    </div>
+    <div id="userDayHourHeatmap"><div class="empty chart-empty">Sin datos.</div></div>
+    <div class="heatmap-scale"><span>Menos tráfico</span><span class="heatmap-scale-bar"></span><span>Más tráfico</span></div>
+    <div class="chart-grid" style="margin-top:16px">
+      <div><div class="cardtitle" style="font-size:12px">Por día de la semana</div><div id="userDayBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+      <div><div class="cardtitle" style="font-size:12px">Por hora del día</div><div id="userHourBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    </div>
+    <div id="userDayHourNote" class="ai" style="margin-top:14px">Sin datos.</div>
+  </div>
+  <details class="detail-accordion"><summary>Fuente / medio de adquisición <span class="chevron-mini">⌄</span></summary><div class="detail-body"><div class="cardsub">Se prioriza Fuente/medio del primer usuario; como respaldo se usa Fuente/medio de la sesión.</div><div id="sourceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+  <details class="ai-accordion" open><summary>🧭 Diagnóstico de diferencias entre usuarios <span class="chevron-mini">⌄</span></summary><div id="userVarianceNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="audiencias" class="section"><details class="accordion"><summary><span class="module-title">🎯 Audiencias</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Usuarios por audiencia</h3><p>Comparación proporcional del volumen de cada audiencia o segmento.</p></div><span class="tip" data-tip="Escala relativa: la audiencia con más usuarios ocupa el 100% del ancho. Cada barra incluye el valor absoluto y su peso dentro del total de audiencias procesadas."><span class="tipi">i</span></span></div><div id="audienceBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participación por audiencia</h3><p>Las audiencias con menor volumen se agrupan como “Otros”.</p></div><span class="tip" data-tip="El gráfico circular muestra las audiencias principales. Para evitar segmentos ilegibles, las restantes se agrupan en Otros; la tabla conserva todas las audiencias."><span class="tipi">i</span></span></div><div id="audienceDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Detalle por audiencia <span class="chevron-mini">⌄</span></summary><div class="detail-body"><div class="cardsub">Se prioriza el informe de Audiencias con Nombre de la audiencia, Total de usuarios, Usuarios nuevos y Sesiones.</div><div id="audienceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+<details class="ai-accordion" open><summary>💡 Lectura técnica <span class="chevron-mini">⌄</span></summary><div id="audienceNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="paginas" class="section"><details class="accordion"><summary><span class="module-title">📄 Páginas más visitadas</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Top de páginas por vistas</h3><p>Comparación proporcional del volumen de cada URL.</p></div><span class="tip" data-tip="Escala relativa: la página con más vistas ocupa el 100% del ancho. Cada barra incluye el valor absoluto y su peso dentro del total de páginas procesadas."><span class="tipi">i</span></span></div><div id="pageBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participación de páginas principales</h3><p>Las páginas restantes se agrupan como “Otros”.</p></div><span class="tip" data-tip="El gráfico circular muestra las páginas principales. Para evitar segmentos ilegibles, las restantes se agrupan en Otros; la tabla conserva más URLs."><span class="tipi">i</span></span></div><div id="pageDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Detalle de páginas <span class="chevron-mini">⌄</span></summary><div class="detail-body"><div id="pageTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+  <details class="ai-accordion" open><summary>🧭 Diagnóstico de campos sin información <span class="chevron-mini">⌄</span></summary><div id="pageDataNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="tecnologia" class="section"><details class="accordion"><summary><span class="module-title">💻 Tecnología, dispositivos y navegadores</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Distribución por dispositivo</h3><p>Móvil, escritorio, tablet y categorías detectadas.</p></div><span class="tip" data-tip="Cada segmento representa el porcentaje de usuarios o sesiones por categoría de dispositivo. El centro muestra el total utilizado como base."><span class="tipi">i</span></span></div><div id="deviceDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Sistema operativo</h3><p>Android, iOS, Windows, Macintosh, Linux y sistemas detectados.</p></div><span class="tip" data-tip="Cada segmento representa usuarios o sesiones por sistema operativo. Esta lectura permite diferenciar Android de iOS, pero no identifica por sí sola la marca o el modelo físico del equipo."><span class="tipi">i</span></span></div><div id="osDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Marca o modelo del dispositivo</h3><p>iPhone, Samsung, Redmi y otros equipos cuando el CSV incluye esa dimensión.</p></div><span class="tip" data-tip="El dashboard prioriza Modelo del dispositivo móvil y, como respaldo, Marca del dispositivo móvil. Para mostrar Samsung, Redmi, iPhone u otros fabricantes/modelos, el CSV debe contener una de esas dimensiones."><span class="tipi">i</span></span></div><div id="deviceDetailBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Navegadores</h3><p>Participación y volumen de todos los navegadores disponibles.</p></div><span class="tip" data-tip="Escala relativa al navegador de mayor volumen. Se incluyen todos los navegadores disponibles y el panel cuenta con desplazamiento cuando es necesario."><span class="tipi">i</span></span></div><div id="browserBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Formato de pantalla</h3><p>Resoluciones de pantalla más usadas por tus visitantes.</p></div><span class="tip" data-tip="GA4 llama a esto 'Resolución de pantalla' (ej. 1920x1080, 390x844). Sirve para decidir a qué tamaños de pantalla priorizar el diseño responsive del sitio. Disponible automáticamente al conectar con Google."><span class="tipi">i</span></span></div><div id="screenBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+<details class="ai-accordion" open><summary>💡 Lectura técnica <span class="chevron-mini">⌄</span></summary><div id="techNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="organico" class="section"><details class="accordion"><summary><span class="module-title">🔎 Consultas de búsqueda orgánica</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="grid4" id="organicKpis"><div class="empty">Sin datos.</div></div>
+  <div class="chart-grid" style="margin-top:12px">
+    <div class="chart-card"><div class="chart-head"><div><h3>Consultas con mayor volumen</h3><p>Palabras o frases que la gente escribió en Google y que más veces trajeron visitas al sitio.</p></div><span class="tip" data-tip="Cada barra es una consulta de búsqueda real que alguien escribió en Google. El ancho representa clics (cuántas veces esa búsqueda terminó en una visita al sitio); si el CSV no trae clics, se usan impresiones (cuántas veces esa búsqueda mostró el sitio en los resultados, con o sin clic)."><span class="tipi">i</span></span></div><div id="queryBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>CTR por consulta y posición media</h3><p>Ordenadas de mayor a menor CTR: qué tan efectiva fue cada búsqueda y en qué puesto de Google aparecías.</p></div><span class="tip" data-tip="Las consultas se ordenan de mayor a menor CTR. El ancho de cada barra es el CTR de esa consulta (% de clics sobre impresiones: qué tan seguido la gente le dio clic cuando tu sitio apareció en esa búsqueda). A la derecha se muestra además la posición media y las impresiones de esa misma consulta."><span class="tipi">i</span></span></div><div id="queryScatter"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Consultas orgánicas <span class="chevron-mini">⌄</span></summary><div class="detail-body"><div class="cardsub">Se muestran hasta 100 consultas en la tabla para conservar legibilidad; las métricas generales se calculan con todo el informe.</div><div id="queryTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+</div></details></section>
+
+<section id="demografia" class="section"><details class="accordion"><summary><span class="module-title">🌎 Demografía</span><span class="chevron">⌄</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Sexo</h3><p>Participación de los segmentos disponibles en GA4.</p></div><span class="tip" data-tip="Porcentaje calculado sobre los usuarios que GA4 permite mostrar. Los valores desconocidos o retenidos por privacidad pueden aparecer agrupados."><span class="tipi">i</span></span></div><div id="genderDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Provincia / Región</h3><p>Escala completa de provincias o regiones disponibles.</p></div><span class="tip" data-tip="La barra mayor equivale a la provincia o región con más usuarios. GA4 entrega esta dimensión como “Región”; en Ecuador equivale a la provincia (ej. Azuay, Pichincha, Guayas). Requiere exportar un informe demográfico con esa dimensión."><span class="tipi">i</span></span></div><div class="trend-controls" style="margin-bottom:10px"><div class="field"><label>País</label><select id="regionCountrySelect" onchange="renderRegionFiltered()"><option value="">Todos los países</option></select></div></div><div id="regionBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participación de provincias principales</h3><p>Las provincias restantes se agrupan como “Otros”.</p></div><span class="tip" data-tip="El gráfico circular muestra las provincias principales. Para evitar segmentos ilegibles, las restantes se agrupan en Otros; la tabla de barras conserva todas las provincias."><span class="tipi">i</span></span></div><div id="regionDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>País</h3><p>Pastel de países principales y escala completa en barras.</p></div><span class="tip" data-tip="El pastel resume los países principales y agrupa el resto como Otros. Las barras inferiores conservan todos los países disponibles con valor y porcentaje."><span class="tipi">i</span></span></div><div id="countryDonut"><div class="empty chart-empty">Sin datos.</div></div><div id="countryBars" class="barlist rich" style="margin-top:12px"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Ciudad</h3><p>Ciudades ordenadas por usuarios; se muestran todos los registros disponibles.</p></div><span class="tip" data-tip="Escala relativa a la ciudad de mayor volumen. El resumen técnico utiliza las tres primeras ciudades cuando el CSV de Ciudad está disponible."><span class="tipi">i</span></span></div><div class="trend-controls" style="margin-bottom:10px"><div class="field"><label>País</label><select id="cityCountrySelect" onchange="renderCityFiltered()"><option value="">Todos los países</option></select></div></div><div id="cityBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <details class="ai-accordion" open><summary>💡 Lectura descriptiva <span class="chevron-mini">⌄</span></summary><div id="demoNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="validacion" class="section"><details class="accordion"><summary><span class="module-title">⚙️ Validación técnica</span><span class="chevron">⌄</span></summary><div class="module-body"><div id="validation"><div class="empty">Sin archivos cargados.</div></div></div></details></section>
+<section id="fuentes-dashboard" class="section"><details class="accordion"><summary><span class="module-title">📚 Registro de reportes procesados</span><span class="chevron">⌄</span></summary><div class="module-body"><div id="fileCards" class="filegrid"><div class="empty">Sin archivos cargados.</div></div></div></details></section>
+</main>
+</div>
+<div id="tooltip" class="floating" role="tooltip" aria-hidden="true"></div>
+<script>
+'use strict';
+
+const state={files:[],datasets:[],filteredDatasets:[],model:null,dataSourceName:'',settings:{dateFrom:'',dateTo:'',dateMode:'safe'}};
+
+const EXPORT_MODULES=[
+  {id:'resumen',label:'Resumen técnico',checked:true},
+  {id:'trafico',label:'Tráfico por canales',checked:true},
+  {id:'usuarios',label:'Usuarios y fuentes',checked:true},
+  {id:'audiencias',label:'Audiencias',checked:true},
+  {id:'paginas',label:'Páginas más visitadas',checked:true},
+  {id:'tecnologia',label:'Tecnología',checked:true},
+  {id:'organico',label:'Búsqueda orgánica',checked:true},
+  {id:'demografia',label:'Demografía',checked:true},
+  {id:'validacion',label:'Validación técnica',checked:false},
+  {id:'fuentes-dashboard',label:'Reportes procesados',checked:false}
+];
+const CHART_COLORS=['#ff7900','#60a5fa','#22c55e','#a78bfa','#f59e0b','#ef4444','#14b8a6','#f472b6','#84cc16','#38bdf8','#fb7185','#c084fc'];
+
+const synonyms={
+  users:['usuarios totales','total users','usuarios activos','active users','usuarios','total de usuarios'],
+  newUsers:['usuarios nuevos','new users','nuevos usuarios'],
+  returningUsers:['usuarios recurrentes','returning users','usuarios que vuelven','usuarios establecidos'],
+  audienceName:['nombre de la audiencia','audience name','nombre de audiencia'],
+  sessions:['sesiones','sessions'],
+  engagedSessions:['sesiones con interaccion','sesiones interactivas','engaged sessions'],
+  engagedSessions:['sesiones con interacción','sesiones con interaccion','engaged sessions'],
+  bounceRate:['porcentaje de rebote','porcentaje de rebotes','tasa de rebote','bounce rate','bounce rate percentage'],
+  engagementRate:['porcentaje de interacciones','porcentaje de interacción','porcentaje de interaccion','tasa de interacción','tasa de interaccion','engagement rate','interaction rate'],
+  channelSession:['grupo de canales principal de la sesión','grupo de canales principal de la sesion','session default channel group','grupo de canales de la sesión','grupo de canales de la sesion'],
+  channelFirst:['primer grupo de canales principal del usuario','grupo de canales principal del primer usuario','first user default channel group','grupo de canales del primer usuario'],
+  dayOfWeek:['dia de la semana','day of week','dia semana','dayofweek'],
+  hour:['hora','hour'],
+  screenResolution:['resolucion de pantalla','formato de pantalla','screen resolution','resolucion'],
+  activeUsers:['usuarios activos','active users'],
+  engagementDuration:['tiempo de interaccion total','tiempo de interaccion','user engagement duration','userengagementduration'],
+  eventCount:['numero de eventos','recuento de eventos','event count','eventos'],
+  channel:['grupo de canales','default channel group','canal'],
+  sourceSession:['fuente de la sesión / medio','fuente de la sesion / medio','fuente de la sesión/medio de la sesión','fuente de la sesion/medio de la sesion','fuente de la sesión','fuente de la sesion','session source / medium','session source medium','session source'],
+  sourceFirst:['fuente del primer usuario / medio','fuente del primer usuario/medio del primer usuario','fuente del primer usuario','first user source / medium','first user source medium','first user source'],
+  source:['fuente / medio','fuente/medio','source / medium','source medium','fuente','source','campaña','campana'],
+  page:['ruta de página y clase de pantalla','ruta de pagina y clase de pantalla','page path and screen class','ruta de página','ruta de pagina','page path','página de destino','pagina de destino','landing page','página','pagina','page'],
+  views:['vistas','views','screen page views','vistas de página','vistas de pagina'],
+  device:['categoría de dispositivo','categoria de dispositivo','device category','dispositivo'],
+  operatingSystem:['sistema operativo','operating system'],
+  deviceBrand:['marca del dispositivo móvil','marca del dispositivo movil','marca del dispositivo','mobile device branding','mobile device brand','device brand'],
+  deviceModel:['modelo del dispositivo móvil','modelo del dispositivo movil','modelo del dispositivo','mobile device model','device model'],
+  browser:['navegador','browser'],
+  query:['consulta','query','search term','consulta de la búsqueda de google orgánica','consulta de la busqueda de google organica'],
+  clicks:['clics','clicks','organic google search clicks','clics de búsqueda orgánica','clics de busqueda organica'],
+  impressions:['impresiones','impressions'],
+  ctr:['ctr','porcentaje de clics','click through rate'],
+  position:['posición media','posicion media','average position','posición','posicion'],
+  gender:['sexo','gender','género','genero'],
+  country:['país','pais','country'],
+  region:['región','region','provincia','state'],
+  city:['ciudad','city']
+};
+const metricKeys=['users','newUsers','returningUsers','sessions','engagedSessions','bounceRate','engagementRate','views','clicks','impressions','ctr','position'];
+const labelKeys=['channelSession','channelFirst','channel','sourceSession','sourceFirst','source','audienceName','page','device','operatingSystem','deviceBrand','deviceModel','browser','query','gender','country','region','city'];
+
+function norm(s){return String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/^\ufeff/,'').replace(/\s*\/\s*/g,'/').replace(/\s+/g,' ').trim()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function fmt(n){n=Number(n||0);return isFinite(n)?n.toLocaleString('es-EC',{maximumFractionDigits:n>=100?0:2}):'0'}
+function pct(n){n=Number(n||0);if(!isFinite(n))return '0%';return ((n>1?n/100:n)*100).toLocaleString('es-EC',{minimumFractionDigits:1,maximumFractionDigits:2})+'%'}
+function fmtCompact(n){n=Number(n||0);if(!isFinite(n))return '0';const abs=Math.abs(n);if(abs>=1000000)return (n/1000000).toLocaleString('es-EC',{maximumFractionDigits:1,minimumFractionDigits:1})+' M';if(abs>=1000)return (n/1000).toLocaleString('es-EC',{maximumFractionDigits:1,minimumFractionDigits:1})+' mil';return n.toLocaleString('es-EC',{maximumFractionDigits:0})}
+function fmtDuration(seconds){seconds=Math.round(Number(seconds||0));if(!isFinite(seconds)||seconds<0)seconds=0;if(seconds<60)return `${seconds} s`;const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60),s=seconds%60;if(h>0)return `${h} h y ${m} min`;return s>0?`${m} min y ${s} s`:`${m} min`}
+function parseNum(v){if(v==null)return 0;let s=String(v).trim();if(!s||s==='—'||s==='-')return 0;let neg=false;if(s.includes('(')&&s.includes(')')){neg=true;s=s.replace(/[()]/g,'')}s=s.replace(/[%$€£\s\u00a0]/g,'');const lc=s.lastIndexOf(','),ld=s.lastIndexOf('.');if(lc>-1&&ld>-1){s=lc>ld?s.replace(/\./g,'').replace(',','.'):s.replace(/,/g,'')}else if(lc>-1){const p=s.split(',');s=(p.length===2&&p[1].length<=2)?p[0].replace(/\./g,'')+'.'+p[1]:s.replace(/,/g,'')}const n=parseFloat(s);return (neg?-1:1)*(isFinite(n)?n:0)}
+function normalizeRate(v){v=parseNum(v);return v>1?v/100:v}
+function hasMetricValue(v){const s=String(v??'').trim();return s!==''&&s!=='—'&&s!=='-'}
+function rateStatus(rate){return rate>=.7?'bad':rate>=.5?'warn':'ok'}
+
+function splitRows(text,d){text=String(text||'').replace(/^\ufeff/,'').replace(/\u0000/g,'');const rows=[];let row=[],cell='',q=false;for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(ch==='"'){if(q&&nx==='"'){cell+='"';i++}else q=!q}else if(ch===d&&!q){row.push(cell);cell=''}else if((ch==='\n'||ch==='\r')&&!q){if(ch==='\r'&&nx==='\n')i++;row.push(cell);if(row.some(x=>String(x).trim()!==''))rows.push(row);row=[];cell=''}else cell+=ch}row.push(cell);if(row.some(x=>String(x).trim()!==''))rows.push(row);return rows.map(r=>r.map(c=>String(c??'').trim().replace(/^"|"$/g,'')))}
+function detectDelimiter(text){let best=',',score=-1;for(const d of [',',';','\t','|']){const rows=splitRows(text,d).slice(0,70);const counts=rows.map(r=>r.length).filter(x=>x>1);const max=Math.max(0,...counts),avg=counts.length?counts.reduce((a,b)=>a+b,0)/counts.length:0;const s=max*3+avg+counts.length/10;if(s>score){score=s;best=d}}return best}
+function headerScore(row,next=[]){const cells=row.map(norm).filter(Boolean);if(cells.length<2)return -100;let score=cells.length;[...metricKeys,...labelKeys].forEach(k=>(synonyms[k]||[]).map(norm).forEach(s=>{if(cells.some(c=>c===s||c.includes(s)||s.includes(c)))score+=5}));const joined=cells.join('|');if(/usuarios|sesiones|rebote|canal|fuente|pagina|dispositivo|navegador|consulta|clics|impresiones|sexo|edad|pais|ciudad/.test(joined))score+=12;if(/resumen|informe|periodo|fecha|agrota/.test(joined)&&cells.length<4)score-=10;let nums=0;next.slice(0,6).forEach(r=>r.forEach(c=>{if(parseNum(c)!==0)nums++}));return score+Math.min(12,nums)}
+function uniqueColumns(cols){const seen={};return cols.map((c,i)=>{const b=String(c||`Columna ${i+1}`).trim().replace(/^\ufeff/,'')||`Columna ${i+1}`;seen[b]=(seen[b]||0)+1;return seen[b]===1?b:`${b} ${seen[b]}`})}
+function bestCol(cols,type){const list=cols.map(raw=>({raw,n:norm(raw)})),syn=(synonyms[type]||[]).map(norm);for(const s of syn){const e=list.find(c=>c.n===s);if(e)return e.raw}for(const s of syn){const e=list.find(c=>c.n.includes(s)||s.includes(c.n));if(e)return e.raw}return null}
+function hasCol(cols,type){return !!bestCol(cols,type)}
+function classify(name,cols){const n=norm(name),j=norm(cols.join(' '));if((n.includes('consulta')||n.includes('query')||j.includes('consulta'))&&(j.includes('impresiones')||j.includes('clicks')||j.includes('clics')))return 'organico';if(n.includes('adquisicion_de_trafico')||n.includes('traffic_acquisition')||n.includes('traffic acquisition')||j.includes('session default channel group')||j.includes('grupo de canales principal de la sesion'))return 'trafico';if(n.includes('adquisicion_de_usuarios')||n.includes('user_acquisition')||n.includes('user acquisition')||j.includes('first user default channel group')||j.includes('grupo de canales principal del primer usuario'))return 'usuarios';if(n.includes('audiencia')||n.includes('audience')||hasCol(cols,'audienceName'))return 'audiencias';if(n.includes('paginas_y_pantallas')||n.includes('pages_and_screens')||n.includes('pages and screens')||n.includes('pagina_de_destino')||hasCol(cols,'page'))return 'paginas';if(n.includes('tecnologia')||n.includes('tech')||n.includes('navegador')||n.includes('sistema_operativo')||n.includes('device_model')||n.includes('device_brand')||n.includes('modelo_del_dispositivo')||n.includes('marca_del_dispositivo')||hasCol(cols,'device')||hasCol(cols,'operatingSystem')||hasCol(cols,'deviceBrand')||hasCol(cols,'deviceModel')||hasCol(cols,'browser'))return 'tecnologia';if(n.includes('demograf')||n.includes('sexo')||n.includes('pais')||n.includes('ciudad')||n.includes('region')||n.includes('provincia')||hasCol(cols,'gender')||hasCol(cols,'country')||hasCol(cols,'region')||hasCol(cols,'city'))return 'demografia';return 'otro'}
+function labelType(t){return {trafico:'Tráfico',usuarios:'Usuarios',audiencias:'Audiencias',paginas:'Páginas',tecnologia:'Tecnología',organico:'Búsqueda orgánica',demografia:'Demografía',otro:'Otro',pendiente:'Pendiente'}[t]||t}
+
+function parseReportDateToken(s){s=String(s||'').trim();let m=s.match(/^(\d{4})(\d{2})(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);const d=new Date(s);return isNaN(d)?null:d}
+function dateISO(d){return d instanceof Date&&!isNaN(d)?d.toISOString().slice(0,10):''}
+function dateLabel(d){return dateISO(d)||'—'}
+function extractReportDates(text){const out={start:null,end:null};const lines=String(text||'').split(/\r?\n/).slice(0,40).join('\n');let m=lines.match(/Fecha\s+de\s+inicio\s*:\s*([0-9\-\/]+)/i);if(m)out.start=parseReportDateToken(m[1]);m=lines.match(/Fecha\s+de\s+finalizaci[oó]n\s*:\s*([0-9\-\/]+)/i);if(m)out.end=parseReportDateToken(m[1]);return out}
+function findRowDateCol(cols){return (cols||[]).find(c=>{const n=norm(c);return /^(fecha|date|dia|day)$/.test(n)||/(^| )(fecha|date|dia|day|mes|month|semana|week)( |$)/.test(n)})||null}
+function parseCSV(text){const delimiter=detectDelimiter(text),raw=splitRows(text,delimiter),meta=extractReportDates(text);if(!raw.length)return {columns:[],rows:[],delimiter,headerIndex:-1,rawRows:0,warnings:['Archivo vacío'],notices:[],reportStart:meta.start,reportEnd:meta.end,rowDateCol:null};let best=0,bestScore=-999;raw.slice(0,90).forEach((r,i)=>{const score=headerScore(r,raw.slice(i+1,i+8));if(score>bestScore){bestScore=score;best=i}});const columns=uniqueColumns(raw[best]);const rows=raw.slice(best+1).filter(r=>r.some(c=>String(c).trim()!=='')).map(r=>Object.fromEntries(columns.map((c,i)=>[c,r[i]??''])));const warnings=[],notices=[];if(columns.length<=1)warnings.push('Se detectó una sola columna. Revise el separador o la exportación.');if(best>10)warnings.push('El encabezado se encontró después de la fila 10. Validar el archivo.');const rowDateCol=findRowDateCol(columns);if(!rowDateCol&&meta.start&&meta.end)notices.push(`Reporte agregado por período (${dateLabel(meta.start)} a ${dateLabel(meta.end)}). La lectura es válida; solo limita el filtrado exacto por día.`);if(!rowDateCol&&(!meta.start||!meta.end))notices.push('No se detectó Fecha por fila ni rango en metadatos. El archivo se procesa completo mientras no se aplique un filtro de fechas.');return {columns,rows,delimiter,headerIndex:best,rawRows:raw.length,warnings,notices,reportStart:meta.start,reportEnd:meta.end,rowDateCol}}
+async function readTextFile(file){const buf=await file.arrayBuffer();let text=new TextDecoder('utf-8').decode(buf);if((text.match(/�/g)||[]).length>20||(text.match(/\u0000/g)||[]).length>10){try{text=new TextDecoder('utf-16le').decode(buf)}catch(e){}}return text}
+
+function isTotalRow(row,cols){return cols.map(c=>norm(row[c])).some(v=>v==='total'||v==='totales'||v==='total general'||v==='grand total')}
+function cleanRows(d){return d.rows.filter(r=>!isTotalRow(r,d.columns))}
+function metricFrom(d,key){const col=bestCol(d.columns,key);if(!col)return 0;const total=d.rows.find(r=>isTotalRow(r,d.columns));if(total)return key==='bounceRate'||key==='engagementRate'||key==='ctr'?normalizeRate(total[col]):parseNum(total[col]);return cleanRows(d).reduce((s,r)=>s+parseNum(r[col]),0)}
+function preferredMetric(ds,key){for(const d of ds){const v=metricFrom(d,key);if(v>0)return {value:v,dataset:d}}return {value:0,dataset:null}}
+function aggregate(ds,labelKey,valueKey,limit=50){const map=new Map();ds.forEach(d=>{const lc=bestCol(d.columns,labelKey),vc=bestCol(d.columns,valueKey);if(!lc||!vc)return;cleanRows(d).forEach(r=>{const label=String(r[lc]||'(sin dato)').trim()||'(sin dato)',value=parseNum(r[vc]);if(value>0)map.set(label,(map.get(label)||0)+value)})});return [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,limit).map(([label,value])=>({label,value}))}
+function weightedRate(ds,rateKey,weightKey='sessions'){let num=0,den=0;ds.forEach(d=>{const rc=bestCol(d.columns,rateKey),wc=bestCol(d.columns,weightKey);if(!rc)return;cleanRows(d).forEach(r=>{const rate=normalizeRate(r[rc]),weight=wc?parseNum(r[wc]):1;if(isFinite(rate)&&weight>0){num+=rate*weight;den+=weight}})});return den?num/den:0}
+function bounceFromDatasets(ds){const direct=weightedRate(ds,'bounceRate','sessions');if(direct>0)return {value:direct,derived:false};const engagement=weightedRate(ds,'engagementRate','sessions');return engagement>0?{value:Math.max(0,1-engagement),derived:true}:{value:0,derived:false}}
+function groupRows(ds,labelKey){const map=new Map();ds.forEach(d=>{const lc=bestCol(d.columns,labelKey);if(!lc)return;const cols={users:bestCol(d.columns,'users'),newUsers:bestCol(d.columns,'newUsers'),returningUsers:bestCol(d.columns,'returningUsers'),sessions:bestCol(d.columns,'sessions'),views:bestCol(d.columns,'views'),bounceRate:bestCol(d.columns,'bounceRate'),engagementRate:bestCol(d.columns,'engagementRate'),clicks:bestCol(d.columns,'clicks'),impressions:bestCol(d.columns,'impressions'),position:bestCol(d.columns,'position')};cleanRows(d).forEach(r=>{const label=String(r[lc]||'(sin dato)').trim()||'(sin dato)';if(!map.has(label))map.set(label,{label,users:0,newUsers:0,returningUsers:0,sessions:0,views:0,clicks:0,impressions:0,bounceNum:0,bounceDen:0,posNum:0,posDen:0,usersAvailable:false,newUsersAvailable:false,returningUsersAvailable:false,sessionsAvailable:false,viewsAvailable:false,clicksAvailable:false,impressionsAvailable:false,bounceAvailable:false,positionAvailable:false});const o=map.get(label);['users','newUsers','returningUsers','sessions','views','clicks','impressions'].forEach(k=>{if(cols[k]&&hasMetricValue(r[cols[k]])){o[k]+=parseNum(r[cols[k]]);o[`${k}Available`]=true}});let br=0,rowBounceAvailable=false;if(cols.bounceRate&&hasMetricValue(r[cols.bounceRate])){br=normalizeRate(r[cols.bounceRate]);rowBounceAvailable=true;o.bounceAvailable=true}else if(cols.engagementRate&&hasMetricValue(r[cols.engagementRate])){br=Math.max(0,1-normalizeRate(r[cols.engagementRate]));rowBounceAvailable=true;o.bounceAvailable=true}const w=cols.sessions&&hasMetricValue(r[cols.sessions])?parseNum(r[cols.sessions]):(cols.users&&hasMetricValue(r[cols.users])?parseNum(r[cols.users]):1);if(rowBounceAvailable&&isFinite(br)&&w>0){o.bounceNum+=br*w;o.bounceDen+=w}if(cols.position&&hasMetricValue(r[cols.position])){const pos=parseNum(r[cols.position]),pw=cols.impressions&&hasMetricValue(r[cols.impressions])?parseNum(r[cols.impressions]):1;if(pos>0&&pw>0){o.posNum+=pos*pw;o.posDen+=pw;o.positionAvailable=true}}})});return [...map.values()].map(o=>({...o,bounceRate:o.bounceDen?o.bounceNum/o.bounceDen:0,position:o.posDen?o.posNum/o.posDen:0,ctr:o.impressions?o.clicks/o.impressions:0}))}
+
+function isDateFilterActive(){return !!(state.settings.dateFrom||state.settings.dateTo)}
+function selectedDateRange(){return {from:state.settings.dateFrom?parseReportDateToken(state.settings.dateFrom):null,to:state.settings.dateTo?parseReportDateToken(state.settings.dateTo):null}}
+function rangesOverlap(a1,a2,b1,b2){if(!a1||!a2||!b1||!b2)return true;return a1<=b2&&b1<=a2}
+function filterDatasetByDate(d){if(!isDateFilterActive())return {...d,filterStatus:'sin filtro',filterRowsBefore:d.rows.length,filterRowsAfter:d.rows.length};const {from,to}=selectedDateRange(),f=from||new Date(-8640000000000000),t=to||new Date(8640000000000000);const clone={...d,rows:[...d.rows],warnings:[...(d.warnings||[])],notices:[...(d.notices||[])],filterRowsBefore:d.rows.length,filterRowsAfter:d.rows.length};const rowDateCol=d.rowDateCol||findRowDateCol(d.columns);if(rowDateCol){clone.rows=d.rows.filter(r=>{const dt=parseReportDateToken(r[rowDateCol]);return dt&&dt>=f&&dt<=t});clone.filterRowsAfter=clone.rows.length;clone.filterStatus='filtrado exacto por fecha';if(!clone.rows.length)clone.warnings.push('El filtro no encontró filas coincidentes.');return clone}if(d.reportStart&&d.reportEnd){if(!rangesOverlap(d.reportStart,d.reportEnd,f,t)){clone.rows=[];clone.filterRowsAfter=0;clone.filterStatus='excluido: fuera del rango';clone.warnings.push('El rango del reporte no coincide con el filtro seleccionado.');return clone}const partial=(from&&dateISO(from)!==dateISO(d.reportStart))||(to&&dateISO(to)!==dateISO(d.reportEnd));if(state.settings.dateMode==='strict'&&partial){clone.rows=[];clone.filterRowsAfter=0;clone.filterStatus='excluido: agregado no filtrable';clone.warnings.push('Modo estricto: el CSV no puede recortarse porque no contiene Fecha por fila.');return clone}clone.filterStatus=partial?'incluido como agregado completo':'incluido: rango coincidente';if(partial)clone.warnings.push('El filtro solicitado es parcial, pero el CSV está agregado para todo el período. Se conserva el total completo en modo seguro.');return clone}if(state.settings.dateMode==='strict'){clone.rows=[];clone.filterRowsAfter=0;clone.filterStatus='excluido: sin fecha';clone.warnings.push('Modo estricto: archivo sin fecha ni rango detectado.')}else{clone.filterStatus='incluido sin validar fecha';clone.notices.push('Archivo procesado completo porque no tiene Fecha por fila ni rango detectable.')}return clone}
+
+function datasetPriority(type){const order={usuarios:0,audiencias:1,trafico:2,paginas:3,tecnologia:4,organico:5,demografia:6,otro:9};return order[type]??9}
+function bestDataset(ds,labelOptions=[],metricOptions=[]){let best=null,bestScore=-1;for(const d of ds){let score=Math.min(d.rows.length,200)/20;labelOptions.forEach((k,i)=>{if(bestCol(d.columns,k))score+=20-i});metricOptions.forEach((k,i)=>{if(bestCol(d.columns,k))score+=12-i});if(d.rows.length===0)score-=100;if(score>bestScore){best=d;bestScore=score}}return best}
+function firstPositiveMetric(ds,key){const ranked=[...ds].sort((a,b)=>{const as=(bestCol(a.columns,key)?100:0)+Math.min(a.rows.length,100),bs=(bestCol(b.columns,key)?100:0)+Math.min(b.rows.length,100);return bs-as});return preferredMetric(ranked,key).value}
+function buildModel(){
+  const base=state.datasets.map(filterDatasetByDate).sort((a,b)=>datasetPriority(a.type)-datasetPriority(b.type));
+  state.filteredDatasets=base;
+  const traffic=base.filter(d=>d.type==='trafico'),usersDs=base.filter(d=>d.type==='usuarios'),audienceDs=base.filter(d=>d.type==='audiencias'),pages=base.filter(d=>d.type==='paginas'),tech=base.filter(d=>d.type==='tecnologia'),organic=base.filter(d=>d.type==='organico'),demo=base.filter(d=>d.type==='demografia');
+
+  const userPrimary=bestDataset(usersDs,['sourceFirst','channelFirst'],['users','newUsers','returningUsers'])||bestDataset(usersDs,[],['users','newUsers','returningUsers']);
+  const trafficPrimary=bestDataset(traffic,['channelSession'],['sessions','users','bounceRate'])||bestDataset(traffic,['channel'],['sessions','users']);
+  const totalsPrimary=usersDs.find(d=>d.name==='GA4 · Totales del período (API)');
+  const totalUsers=(totalsPrimary?metricFrom(totalsPrimary,'users'):0)||(userPrimary?metricFrom(userPrimary,'users'):0)||firstPositiveMetric(usersDs,'users')||(trafficPrimary?metricFrom(trafficPrimary,'users'):0)||firstPositiveMetric(base,'users');
+  const newUsers=(totalsPrimary?metricFrom(totalsPrimary,'newUsers'):0)||(userPrimary?metricFrom(userPrimary,'newUsers'):0)||firstPositiveMetric(usersDs,'newUsers')||(trafficPrimary?metricFrom(trafficPrimary,'newUsers'):0);
+  let returningUsers=(userPrimary?metricFrom(userPrimary,'returningUsers'):0)||firstPositiveMetric(usersDs,'returningUsers')||(trafficPrimary?metricFrom(trafficPrimary,'returningUsers'):0);
+  let returningEstimated=false;
+  if(!returningUsers&&totalUsers&&newUsers){returningUsers=Math.max(0,totalUsers-newUsers);returningEstimated=true}
+  const sessions=(trafficPrimary?metricFrom(trafficPrimary,'sessions'):0)||firstPositiveMetric(traffic,'sessions')||firstPositiveMetric(base,'sessions');
+
+  let bounce=bounceFromDatasets(trafficPrimary?[trafficPrimary]:traffic);
+  if(!bounce.value)bounce=bounceFromDatasets(userPrimary?[userPrimary]:usersDs);
+  if(!bounce.value)bounce=bounceFromDatasets(pages);
+  if(!bounce.value)bounce=bounceFromDatasets(tech);
+
+  const channelPrimary=bestDataset(traffic,['channelSession'],['sessions','users','bounceRate'])||bestDataset(traffic,['channel'],['sessions','users']);
+  const userChannelPrimary=bestDataset(usersDs,['channelFirst'],['users','newUsers','returningUsers','bounceRate'])||bestDataset(usersDs,['channel'],['users','newUsers','returningUsers']);
+  let channels=channelPrimary?groupRows([channelPrimary],bestCol(channelPrimary.columns,'channelSession')?'channelSession':'channel'):[];
+  if(userChannelPrimary){
+    const userKey=bestCol(userChannelPrimary.columns,'channelFirst')?'channelFirst':'channel';
+    const userChannelRows=groupRows([userChannelPrimary],userKey);
+    const channelMap=new Map(channels.map(x=>[x.label,{...x}]));
+    userChannelRows.forEach(u=>{
+      const current=channelMap.get(u.label)||{label:u.label,users:0,newUsers:0,returningUsers:0,sessions:0,views:0,clicks:0,impressions:0,bounceRate:0,position:0};
+      current.users=u.users||current.users||0;
+      current.newUsers=u.newUsers||current.newUsers||0;
+      current.returningUsers=u.returningUsers||current.returningUsers||0;
+      current.usersAvailable=!!(u.usersAvailable||current.usersAvailable);
+      current.newUsersAvailable=!!(u.newUsersAvailable||current.newUsersAvailable);
+      current.returningUsersAvailable=!!(u.returningUsersAvailable||current.returningUsersAvailable);
+      if(!current.bounceAvailable&&u.bounceAvailable){current.bounceRate=u.bounceRate;current.bounceAvailable=true}
+      channelMap.set(u.label,current);
+    });
+    channels=[...channelMap.values()];
+  }
+  channels.sort((a,b)=>(b.sessions||0)-(a.sessions||0)||(b.users||0)-(a.users||0));
+
+  const sourcePrimary=bestDataset(usersDs,['sourceFirst'],['users','newUsers','returningUsers'])||bestDataset(usersDs,['source'],['users','newUsers','returningUsers'])||bestDataset(traffic,['sourceSession'],['users','sessions'])||bestDataset(traffic,['source'],['users','sessions']);
+  let sources=[];
+  if(sourcePrimary){const key=bestCol(sourcePrimary.columns,'sourceFirst')?'sourceFirst':bestCol(sourcePrimary.columns,'sourceSession')?'sourceSession':'source';sources=groupRows([sourcePrimary],key)}
+  sources.sort((a,b)=>b.users-a.users||b.sessions-a.sessions);
+
+  const audiencePrimary=bestDataset(audienceDs,['audienceName'],['users','newUsers','sessions']);
+  const audiences=audiencePrimary?groupRows([audiencePrimary],'audienceName').sort((a,b)=>b.users-a.users||b.sessions-a.sessions):[];
+
+  const pagePrimary=bestDataset(pages,['page'],['views','users','bounceRate']);
+  const pageRows=pagePrimary?groupRows([pagePrimary],'page').sort((a,b)=>b.views-a.views||b.users-a.users):[];
+
+  const devicePrimary=bestDataset(tech,['device'],['users','sessions']);
+  let devices=devicePrimary?aggregate([devicePrimary],'device','users',20):[];
+  if(!devices.length&&devicePrimary)devices=aggregate([devicePrimary],'device','sessions',20);
+  const osPrimary=bestDataset(tech,['operatingSystem'],['users','sessions']);
+  let operatingSystems=osPrimary?aggregate([osPrimary],'operatingSystem','users',100):[];
+  if(!operatingSystems.length&&osPrimary)operatingSystems=aggregate([osPrimary],'operatingSystem','sessions',100);
+  const modelPrimary=bestDataset(tech,['deviceModel'],['users','sessions']);
+  const brandPrimary=bestDataset(tech,['deviceBrand'],['users','sessions']);
+  const deviceDetailPrimary=modelPrimary||brandPrimary;
+  const deviceDetailKey=modelPrimary?'deviceModel':'deviceBrand';
+  let deviceDetails=deviceDetailPrimary?aggregate([deviceDetailPrimary],deviceDetailKey,'users',250):[];
+  if(!deviceDetails.length&&deviceDetailPrimary)deviceDetails=aggregate([deviceDetailPrimary],deviceDetailKey,'sessions',250);
+  const deviceDetailType=modelPrimary?'modelo':brandPrimary?'marca':'';
+  const browserPrimary=bestDataset(tech,['browser'],['users','sessions']);
+  let browsers=browserPrimary?aggregate([browserPrimary],'browser','users',100):[];
+  if(!browsers.length&&browserPrimary)browsers=aggregate([browserPrimary],'browser','sessions',100);
+  const screenPrimary=bestDataset(tech,['screenResolution'],['users','sessions']);
+  let screenFormats=screenPrimary?aggregate([screenPrimary],'screenResolution','users',60):[];
+  if(!screenFormats.length&&screenPrimary)screenFormats=aggregate([screenPrimary],'screenResolution','sessions',60);
+
+  const organicPrimary=bestDataset(organic,['query'],['clicks','impressions','position']);
+  const organicDs=organicPrimary?[organicPrimary]:[];
+  const queries=organicDs.length?groupRows(organicDs,'query').sort((a,b)=>b.clicks-a.clicks||b.impressions-a.impressions):[];
+  const organicClicks=queries.reduce((s,x)=>s+x.clicks,0),organicImpressions=queries.reduce((s,x)=>s+x.impressions,0),organicCtr=organicImpressions?organicClicks/organicImpressions:weightedRate(organicDs,'ctr','impressions');
+  let organicPosition=organicImpressions?queries.reduce((s,x)=>s+x.position*x.impressions,0)/organicImpressions:weightedRate(organicDs,'position','impressions');
+  if(!isFinite(organicPosition))organicPosition=0;
+
+  const genderPrimary=bestDataset(demo,['gender'],['users']),countryPrimary=bestDataset(demo,['country'],['users']),regionPrimary=bestDataset(demo,['region'],['users']),cityPrimary=bestDataset(demo,['city'],['users']);
+  const genders=genderPrimary?aggregate([genderPrimary],'gender','users',30):[];
+  const countries=countryPrimary?groupRows([countryPrimary],'country').filter(x=>x.users>0).sort((a,b)=>b.users-a.users):[];
+  const regions=regionPrimary?groupRows([regionPrimary],'region').filter(x=>x.users>0).sort((a,b)=>b.users-a.users):[];
+  const cities=cityPrimary?groupRows([cityPrimary],'city').filter(x=>x.users>0).sort((a,b)=>b.users-a.users):[];
+  const warnings=base.flatMap(d=>(d.warnings||[]).map(msg=>({file:d.name,msg})));
+  return {base,traffic,usersDs,audienceDs,pages,tech,organic,demo,totalUsers,newUsers,returningUsers,returningEstimated,sessions,bounce,channels,sources,audiences,pageRows,devices,operatingSystems,deviceDetails,deviceDetailType,browsers,screenFormats,queries,organicClicks,organicImpressions,organicCtr,organicPosition,genders,regions,countries,cities,warnings,dateInfo:summarizeDateFilter(base),primary:{user:userPrimary,traffic:trafficPrimary,channel:channelPrimary,source:sourcePrimary,audience:audiencePrimary,page:pagePrimary,device:devicePrimary,operatingSystem:osPrimary,deviceModel:modelPrimary,deviceBrand:brandPrimary,browser:browserPrimary,organic:organicPrimary,region:regionPrimary,city:cityPrimary}};
+}
+function summarizeDateFilter(base){const ranges=state.datasets.filter(d=>d.reportStart&&d.reportEnd).map(d=>({start:d.reportStart,end:d.reportEnd}));let min=null,max=null;ranges.forEach(r=>{if(!min||r.start<min)min=r.start;if(!max||r.end>max)max=r.end});return {detectedStart:min,detectedEnd:max,active:isDateFilterActive(),exact:base.filter(d=>d.filterStatus==='filtrado exacto por fecha').length,aggregated:base.filter(d=>String(d.filterStatus||'').includes('agregado')).length,excluded:base.filter(d=>d.filterRowsAfter===0&&isDateFilterActive()).length}}
+
+function kpi(label,val,hint,cls='',tipText=''){return `<div class="kpi ${cls}">${tipText?`<span class="kpi-tip tip" data-tip="${esc(tipText)}"><span class="tipi">i</span></span>`:''}<div class="lbl">${esc(label)}</div><div class="val">${val}</div><div class="hint">${hint}</div></div>`}
+function safe(id,fn){try{fn()}catch(e){console.error('Error en',id,e);const el=document.getElementById(id);if(el)el.innerHTML=`<div class="safeerr">Este módulo no pudo renderizarse. ${esc(e.message)}</div>`}}
+function tip(label,text){return `<span class="tip" data-tip="${esc(text)}">${esc(label)} <span class="tipi">i</span></span>`}
+function metricTotal(data){return (data||[]).reduce((s,x)=>s+Number(x?.value||0),0)}
+function chartTooltip(label,value,total,metric,formatter=fmt){return `${label}: ${formatter(value)} ${metric}. Participación: ${pct(total?value/total:0)}. Escala calculada con un total de ${formatter(total)} ${metric}.`}
+function renderBarChart(id,data,{metric='usuarios',formatter=fmt,limit=Infinity,empty='No se encontraron valores medibles.',valueHTML=null,tooltipBuilder=null,scrollClass='',showTotal=true}={}){
+  const all=(data||[]).filter(x=>x&&Number(x.value)>0),arr=all.slice(0,limit),total=metricTotal(all),max=Math.max(0,...arr.map(x=>Number(x.value||0))),el=document.getElementById(id);if(!el)return;
+  if(!arr.length){el.innerHTML=`<div class="empty">${esc(empty)}</div>`;return}
+  const rows=arr.map(x=>`<div class="barrow tip" data-tip="${esc(tooltipBuilder?tooltipBuilder(x,total):chartTooltip(x.label,x.value,total,metric,formatter))}"><div class="barlabel" title="${esc(x.label)}">${esc(x.label)}</div><div class="bartrack"><div class="barfill" style="width:${max?Math.max(1.5,x.value/max*100):0}%"></div></div><div class="barval">${valueHTML?valueHTML(x):`${formatter(x.value)}<small>${pct(total?x.value/total:0)}</small>`}</div></div>`).join('');
+  const note=showTotal?`<div class="scale-note"><span class="tipi">i</span> Escala relativa: barra máxima = ${formatter(max)} ${esc(metric)} · Total representado = ${formatter(total)}.</div>`:`<div class="scale-note"><span class="tipi">i</span> Escala relativa al valor más alto de ${esc(metric)} en el conjunto visible.</div>`;
+  el.innerHTML=`<div class="chart-scroll${scrollClass?' '+scrollClass:''}"><div class="barlist rich">${rows}</div></div>${note}`;
+}
+function renderDonutChart(id,data,{metric='usuarios',formatter=fmt,maxSegments=8,centerLabel='Total'}={}){
+  const raw=(data||[]).filter(x=>x&&Number(x.value)>0),el=document.getElementById(id);if(!el)return;if(!raw.length){el.innerHTML='<div class="empty chart-empty">No se encontraron valores medibles.</div>';return}
+  const total=metricTotal(raw),top=raw.slice(0,maxSegments),rest=raw.slice(maxSegments).reduce((s,x)=>s+x.value,0),parts=rest>0?[...top,{label:'Otros',value:rest}]:top;let angle=0;const segments=parts.map((x,i)=>{const start=angle,end=angle+(x.value/total*360);angle=end;return `${CHART_COLORS[i%CHART_COLORS.length]} ${start.toFixed(2)}deg ${end.toFixed(2)}deg`}).join(',');
+  const legend=parts.map((x,i)=>`<div class="legend-item tip" data-tip="${esc(chartTooltip(x.label,x.value,total,metric,formatter))}"><span class="legend-swatch" style="background:${CHART_COLORS[i%CHART_COLORS.length]}"></span><span class="legend-label" title="${esc(x.label)}">${esc(x.label)}</span><span class="legend-value">${formatter(x.value)}<small>${pct(x.value/total)}</small></span></div>`).join('');
+  el.innerHTML=`<div class="donut-layout"><div class="donut-wrap"><div class="donut" style="--segments:${segments}"><div class="donut-center"><b>${formatter(total)}</b><span>${esc(centerLabel)}</span></div></div></div><div class="legend">${legend}</div></div><div class="scale-note"><span class="tipi">i</span> Cada ángulo equivale a su porcentaje del total. ${rest>0?`${raw.length-maxSegments} categorías adicionales se agruparon en “Otros”.`:'Todas las categorías están representadas.'}</div>`;
+}
+function renderUserComposition(m){const el=document.getElementById('userComposition');if(!el)return;const data=[{label:'Usuarios nuevos',value:m.newUsers},{label:'Usuarios recurrentes',value:m.returningUsers}].filter(x=>x.value>0),total=metricTotal(data);if(!data.length){el.innerHTML='<div class="empty chart-empty">Sin usuarios nuevos o recurrentes.</div>';return}const newPct=total?m.newUsers/total:0,retPct=total?m.returningUsers/total:0;el.innerHTML=`<div class="stacked-chart"><div class="stack-segment tip" data-tip="Usuarios nuevos: ${fmt(m.newUsers)} · ${pct(newPct)}" style="width:${newPct*100}%;background:${CHART_COLORS[1]}">${newPct>.16?pct(newPct):''}</div><div class="stack-segment tip" data-tip="Usuarios recurrentes: ${fmt(m.returningUsers)} · ${pct(retPct)}" style="width:${retPct*100}%;background:${CHART_COLORS[3]}">${retPct>.16?pct(retPct):''}</div></div><div class="stack-legend"><div class="stack-item"><b>${fmt(m.newUsers)}</b><span>Nuevos · ${pct(newPct)}</span></div><div class="stack-item"><b>${fmt(m.returningUsers)}</b><span>Recurrentes · ${pct(retPct)}${m.returningEstimated?' · estimado':''}</span></div></div><div class="scale-note"><span class="tipi">i</span> El ancho total representa ${fmt(total)} usuarios clasificados.</div>`}
+function renderCtrPositionBars(id,queries){
+  const el=document.getElementById(id);if(!el)return;
+  const data=(queries||[]).filter(x=>x.impressions>0&&x.position>0).sort((a,b)=>b.ctr-a.ctr||b.impressions-a.impressions).slice(0,20);
+  if(!data.length){el.innerHTML='<div class="empty chart-empty">No hay consultas con impresiones y posición suficientes.</div>';return}
+  renderBarChart(id,data.map(q=>({label:q.label,value:q.ctr,position:q.position,impressions:q.impressions,clicks:q.clicks})),{
+    metric:'CTR',formatter:pct,limit:20,scrollClass:'limit-10',showTotal:false,
+    valueHTML:(x)=>`${pct(x.value)}<small>Pos. ${fmt(x.position)} · Imp. ${fmt(x.impressions)}</small>`,
+    tooltipBuilder:(x,total)=>`${x.label} · CTR: ${pct(x.value)} · Posición media: ${fmt(x.position)} · Impresiones: ${fmt(x.impressions)} · Clics: ${fmt(x.clicks)}. Escala relativa al CTR más alto del conjunto visible.`
+  });
+}
+function summaryInsight(id,{label,value,cls='',rows=[],cities=[],tipText=''}){const el=document.getElementById(id);if(!el)return;el.className=`kpi summary-insight ${cls}`;el.innerHTML=`${tipText?`<span class="kpi-tip tip" data-tip="${esc(tipText)}"><span class="tipi">i</span></span>`:''}<div class="lbl">${esc(label)}</div><div class="val">${esc(value||'No disponible')}</div><div class="summary-meta">${rows.map(r=>`<div class="summary-row"><span>${esc(r.label)}</span><b>${r.html??esc(r.value)}</b></div>`).join('')}${cities.length?`<div class="city-list">${cities.map((c,i)=>`<div class="city-chip"><span>${i+1}. ${esc(c.label)}</span><b>${fmt(c.value)}</b></div>`).join('')}</div>`:''}</div>`}
+function renderGA4Snapshot(){
+  const el=document.getElementById('ga4Snapshot');
+  if(!el)return;
+  const src=state.datasets.find(d=>d.name==='GA4 · Totales del período (API)');
+  if(!src){el.innerHTML='<div class="empty">Conecta con Google para ver esta vista (requiere la consulta agregada del período, no disponible con CSV manual).</div>';return}
+  const activeCol=bestCol(src.columns,'activeUsers'),newCol=bestCol(src.columns,'newUsers'),engCol=bestCol(src.columns,'engagementDuration'),evCol=bestCol(src.columns,'eventCount'),row=src.rows[0]||{};
+  const active=activeCol&&hasMetricValue(row[activeCol])?parseNum(row[activeCol]):null;
+  const news=newCol&&hasMetricValue(row[newCol])?parseNum(row[newCol]):null;
+  const eng=engCol&&hasMetricValue(row[engCol])?parseNum(row[engCol]):null;
+  const events=evCol&&hasMetricValue(row[evCol])?parseNum(row[evCol]):null;
+  const avgEng=(eng!==null&&active)?eng/active:null;
+  const items=[
+    {label:'Usuarios activos',value:active!==null?fmtCompact(active):'—',tip:active!==null?`${fmt(active)} usuarios activos exactos en el período.`:'Sin datos disponibles.'},
+    {label:'Usuarios nuevos',value:news!==null?fmtCompact(news):'—',tip:news!==null?`${fmt(news)} usuarios nuevos exactos en el período.`:'Sin datos disponibles.'},
+    {label:'Tiempo de interacción medio',value:avgEng!==null?fmtDuration(avgEng):'—',tip:avgEng!==null?'Tiempo total de interacción dividido entre usuarios activos: en promedio, cuánto tiempo pasó cada persona realmente interactuando con el sitio (no cuenta el tiempo con la pestaña en segundo plano).':'Requiere Usuarios activos y Tiempo de interacción total.'},
+    {label:'Número de eventos',value:events!==null?fmtCompact(events):'—',tip:events!==null?`${fmt(events)} eventos exactos (vistas de página, clics, desplazamientos y cualquier otra interacción registrada) en el período.`:'Sin datos disponibles.'}
+  ];
+  el.innerHTML=items.map(i=>`<div class="ga4-snapshot-item tip" data-tip="${esc(i.tip)}"><div class="lbl">${esc(i.label)}</div><div class="val">${i.value}</div></div>`).join('');
+}
+function renderSummary(m){
+  renderGA4Snapshot();
+  document.getElementById('kpis').innerHTML=
+    kpi('Usuarios totales',fmt(m.totalUsers),'Preferencia: adquisición de usuarios','blue','Cantidad total de personas distintas que visitaron el sitio durante el período analizado, sin importar cuántas veces haya vuelto cada una. Al conectar con Google se usa una consulta agregada sin desglose (igual a como GA4 calcula su propio total) para no contar dos veces a quien visitó por más de un canal o más de un día; con CSV manual se prioriza el informe de Adquisición de usuarios para minimizar ese mismo riesgo.')+
+    kpi('Usuarios nuevos',fmt(m.newUsers),'Primera visita detectada','green','Usuarios que entraron al sitio por primera vez durante el período analizado (GA4 no tenía un registro previo de ellos). Esta cifra mide qué tan bien están funcionando tus canales para atraer audiencia que no te conocía: SEO, campañas, redes sociales, etc. Al conectar con Google también usa la consulta agregada sin desglose, por la misma razón que Usuarios totales.')+
+    kpi('Usuarios recurrentes',fmt(m.returningUsers),m.returningEstimated?'Estimado: totales − nuevos':'Métrica directa de GA4','purple','Usuarios que ya habían visitado el sitio antes de este período y regresaron. Indican qué tan bien retienes o fidelizas a tu audiencia. GA4 no entrega esta cifra de forma directa por API, así que el dashboard la estima como Usuarios totales menos Usuarios nuevos; al usar la consulta agregada sin desglose para esos dos valores, la estimación resultante es más precisa que si se calculara sobre datos desglosados por canal o por día.')+
+    kpi('Sesiones',fmt(m.sessions),'Adquisición de tráfico','','Una sesión es un período de actividad continua de una persona en el sitio (equivalente a "una visita"). Un mismo usuario puede generar varias sesiones en días distintos del período, por eso el número de sesiones suele ser mayor al número de usuarios.')+
+    kpi('Tasa de rebote',m.bounce.value?pct(m.bounce.value):'—',m.bounce.value?(m.bounce.derived?'Calculada desde interacción':'Métrica directa ponderada'):'No disponible',m.bounce.value?rateStatus(m.bounce.value):'yellow','Porcentaje de sesiones en las que la persona entró al sitio y se fue sin ninguna acción relevante: sin ver otra página, sin hacer clic ni permanecer el tiempo mínimo esperado. Un valor alto puede indicar que la página de entrada no cumplió lo que la persona buscaba. Si el CSV no trae el rebote directo, se calcula como 1 menos la tasa de interacción que GA4 sí reporta.');
+  const ch=m.channels[0],dev=m.devices[0],browser=m.browsers[0],country=m.countries[0],region=m.regions[0],citiesTop=m.cities.slice(0,3),channelTotal=m.channels.reduce((s,x)=>s+(x.sessions||x.users),0),deviceTotal=metricTotal(m.devices);
+  summaryInsight('summaryChannel',{label:'Canal principal',value:ch?.label||'No disponible',cls:'blue',tipText:'Canal de adquisición con mayor volumen dentro del período seleccionado. Resume cuál fue la fuente agrupada más importante para captar tráfico o usuarios. El "Rebote" de esta tarjeta es específico de este canal, no el promedio del sitio completo (esa cifra general está en la tarjeta "Tasa de rebote" de arriba) — es normal y esperado que un canal puntual difiera del promedio general.',rows:ch?[{label:'Volumen',value:`${fmt(ch.sessions||ch.users)} ${ch.sessions?'sesiones':'usuarios'}`},{label:'Participación',html:pct(channelTotal?(ch.sessions||ch.users)/channelTotal:0)},{label:'Rebote (solo este canal)',html:ch.bounceRate?pct(ch.bounceRate):'—'}]:[{label:'Estado',value:'Falta informe de canales'}]});
+  summaryInsight('summaryTech',{label:'Tecnología dominante',value:dev?.label||'No disponible',cls:'purple',tipText:'Resumen del entorno tecnológico más relevante detectado en la audiencia: categoría de dispositivo, sistema operativo, marca o modelo cuando esté disponible y navegador principal.',rows:[{label:'Participación dispositivo',html:dev?pct(deviceTotal?dev.value/deviceTotal:0):'—'},{label:'Sistema operativo',value:m.operatingSystems?.[0]?.label||'No disponible'},{label:'Marca / modelo',value:m.deviceDetails?.[0]?.label||'CSV específico no cargado'},{label:'Navegador principal',value:browser?.label||'No disponible'}]});
+  summaryInsight('summaryLocation',{label:'Ubicación principal',value:country?.label||'País no disponible',cls:'green',tipText:'Ubicación geográfica con mayor peso en la audiencia. Resume el país dominante y, cuando el CSV correspondiente está disponible, la provincia/región, la tasa de rebote del país y las ciudades más relevantes. GA4 llama "Región" a esta dimensión; en Ecuador equivale a la provincia.',rows:[
+    {label:'Usuarios del país',value:country?fmt(country.users):'—'},
+    {label:'Provincia principal',value:region?.label||'CSV de Región no cargado'},
+    {label:'Tasa de rebote del país',html:country?.bounceRate?pct(country.bounceRate):'No disponible en los datos cargados'},
+    {label:'Ciudades destacadas',value:citiesTop.length?`${citiesTop.length} disponibles`:'CSV de Ciudad no cargado'}
+  ],cities:citiesTop.map(x=>({label:x.label,value:x.users}))});
+}
+function renderTraffic(m){const data=m.channels.map(x=>({label:x.label,value:x.sessions||x.users}));renderDonutChart('channelDonut',data,{metric:m.channels.some(x=>x.sessions)?'sesiones':'usuarios',centerLabel:'Volumen'});renderBarChart('channelBars',data,{metric:m.channels.some(x=>x.sessions)?'sesiones':'usuarios'});const rows=m.channels.map(x=>`<tr><td>${tip(x.label,channelExplanation(x.label))}</td><td class="num">${x.sessionsAvailable?fmt(x.sessions):'—'}</td><td class="num">${x.usersAvailable?fmt(x.users):'—'}</td><td class="num">${x.bounceAvailable?pct(x.bounceRate):'—'}</td><td class="num">${pct(metricTotal(data)?(x.sessions||x.users)/metricTotal(data):0)}</td></tr>`).join('');document.getElementById('channelTable').innerHTML=rows?`<table><thead><tr><th>${tip('Canal','Clasificación automática de GA4 que agrupa el origen y el medio de cada visita, por ejemplo: búsqueda orgánica, acceso directo, campañas pagadas, redes sociales o referencias desde otros sitios.')}</th><th class="num">${tip('Sesiones','Cantidad de visitas iniciadas desde este canal durante el período. Una misma persona puede generar varias sesiones, por lo que esta cifra puede ser mayor que Usuarios.')}</th><th class="num">${tip('Usuarios','Personas distintas asociadas a este canal según el informe cargado. La suma por canal puede no coincidir exactamente con el total general por deduplicación y por el alcance de la dimensión utilizada.')}</th><th class="num">${tip('Rebote','Porcentaje de sesiones de este canal que no fueron sesiones con interacción. Se muestra solo cuando el CSV incluye Tasa de rebote o Tasa de interacción compatible.')}</th><th class="num">${tip('Participación','Porcentaje directo del volumen clasificado que aporta este canal: valor del canal ÷ total de la tabla × 100. Se priorizan Sesiones y, si no existen, se usan Usuarios. No representa ventas ni conversiones.')}</th></tr></thead><tbody>${rows}</tbody></table>`:'<table><tbody><tr><td>Sin canales detectados.</td></tr></tbody></table>';const top=m.channels[0],total=metricTotal(data),mixedUnits=m.channels.some(x=>!x.sessions&&x.users)&&m.channels.some(x=>x.sessions);const varianceNote=mixedUnits?'Este gráfico combina dos informes de GA4 (tráfico por sesión y adquisición de usuarios por primer canal) para no dejar canales fuera. Cuando un canal solo aparece en uno de los dos informes, su valor aquí se toma de sesiones si están disponibles, o de usuarios en caso contrario. Por eso el total de este gráfico puede diferir levemente de la cifra "Sesiones" del Resumen técnico, que se calcula exclusivamente desde el informe de tráfico por sesión.':'Este gráfico se basa en el mismo informe de tráfico por sesión que la cifra "Sesiones" del Resumen técnico. Si notas una pequeña diferencia entre ambos totales, suele deberse a redondeo o a un canal adicional detectado únicamente en el informe de adquisición de usuarios.';document.getElementById('channelNote').innerHTML=top?`<b>Lectura técnica:</b> ${esc(top.label)} concentra ${pct(total?(top.sessions||top.users)/total:0)} del volumen clasificado. Pase el cursor por segmentos y barras para revisar escala, valor y participación.<br><br><b>¿Por qué puede variar frente al Resumen técnico?</b> ${varianceNote}`:'<b>Lectura técnica:</b> carga el informe de Adquisición de tráfico con Grupo de canales principal de la sesión y Sesiones.'}
+function channelExplanation(label){const n=norm(label);if(/organic/.test(n))return 'Tráfico procedente de resultados orgánicos en buscadores.';if(/paid|cpc|display/.test(n))return 'Tráfico procedente de campañas pagadas.';if(/direct/.test(n))return 'Sesiones sin referencia identificable o acceso directo. Un volumen alto puede indicar falta de UTMs.';if(/social/.test(n))return 'Tráfico procedente de redes sociales, orgánico o pagado según la clasificación.';if(/referral/.test(n))return 'Visitas enviadas desde otros sitios web.';if(/email/.test(n))return 'Sesiones identificadas desde campañas de correo.';if(/unassigned|not set|sin asignar/.test(n))return 'GA4 no pudo clasificar correctamente el canal. Revisar UTMs y etiquetado.';return 'Grupo de canal detectado por GA4.'}
+function renderUsers(m){document.getElementById('userKpis').innerHTML=kpi('Usuarios totales',fmt(m.totalUsers),'Alcance total','blue','Cantidad de personas distintas que tuvieron actividad en el sitio durante el período. Es una métrica deduplicada: una persona se cuenta una sola vez aunque visite varias veces o llegue por diferentes fuentes.')+kpi('Nuevos',fmt(m.newUsers),m.totalUsers?pct(m.newUsers/m.totalUsers)+' del total':'Sin base','green','Usuarios cuya primera visita registrada por GA4 ocurrió dentro del período analizado. Mide la capacidad del sitio y sus canales para atraer audiencia por primera vez.')+kpi('Recurrentes',fmt(m.returningUsers),m.totalUsers?pct(m.returningUsers/m.totalUsers)+' del total':'Sin base','purple',m.returningEstimated?'Usuarios que regresaron al sitio. En este procesamiento la cifra fue estimada como Usuarios totales menos Usuarios nuevos porque el CSV no incluyó la métrica directa.':'Usuarios que ya habían visitado el sitio y volvieron a tener actividad. Un mismo usuario puede figurar como nuevo y recurrente dentro del mismo período si entró por primera vez y luego regresó.')+kpi('Relación nuevos/recurrentes',m.returningUsers?fmt(m.newUsers/m.returningUsers):'—','Valores mayores a 1 indican predominio de nuevos','','Compara cuántos usuarios nuevos llegaron por cada usuario recurrente en el período. Se calcula como Usuarios nuevos ÷ Usuarios recurrentes. Por ejemplo, un valor de 5 significa que por cada usuario que regresó hubo 5 usuarios que visitaron el sitio por primera vez. Valores altos reflejan una audiencia dominada por visitantes nuevos (buena captación, oportunidad de fidelizar); valores cercanos a 1 reflejan equilibrio; valores menores a 1 indican predominio de usuarios que ya conocían el sitio.');renderUserComposition(m);const sourceData=m.sources.map(x=>({label:x.label,value:x.users||x.sessions}));renderBarChart('sourceBars',sourceData,{metric:m.sources.some(x=>x.users)?'usuarios':'sesiones',limit:30,empty:'El CSV cargado no contiene Fuente / medio.'});const total=metricTotal(sourceData),rows=m.sources.slice(0,100).map(x=>`<tr><td>${esc(x.label)}</td><td class="num">${x.usersAvailable?fmt(x.users):'—'}</td><td class="num">${x.newUsersAvailable?fmt(x.newUsers):'—'}</td><td class="num">${x.returningUsersAvailable?fmt(x.returningUsers):'—'}</td><td class="num">${x.sessionsAvailable?fmt(x.sessions):'—'}</td><td class="num">${pct(total?(x.users||x.sessions)/total:0)}</td></tr>`).join('');document.getElementById('sourceTable').innerHTML=rows?`<table><thead><tr><th>Fuente / medio</th><th class="num">Usuarios</th><th class="num">Nuevos</th><th class="num">Recurrentes</th><th class="num">Sesiones</th><th class="num">Participación</th></tr></thead><tbody>${rows}</tbody></table>`:'<table><tbody><tr><td>No se detectó Fuente / medio. Exporta Adquisición de usuarios o Adquisición de tráfico incluyendo esa dimensión.</td></tr></tbody></table>';const classified=m.newUsers+m.returningUsers,diff=classified-m.totalUsers,absDiff=Math.abs(diff),direction=diff>0?'supera':'queda por debajo de',compositionBase=classified;const variance=document.getElementById('userVarianceNote');if(variance){const comparison=m.totalUsers&&compositionBase?(diff===0?`En este procesamiento, Nuevos + Recurrentes suman <b>${fmt(compositionBase)}</b> y coinciden con Usuarios totales.`:`En este procesamiento, Nuevos + Recurrentes suman <b>${fmt(compositionBase)}</b>, mientras Usuarios totales registra <b>${fmt(m.totalUsers)}</b>: la suma ${direction} al total en <b>${fmt(absDiff)}</b>.`):'No existe una base suficiente para comparar las tres métricas.';const reason=m.returningEstimated?'La cifra de recurrentes fue estimada como Total menos Nuevos; por ello la coincidencia, cuando existe, es producto de esa fórmula y no de una métrica recurrente independiente.':'En GA4, “Nuevos” y “Recurrentes” no son grupos necesariamente excluyentes: una persona puede visitar por primera vez y regresar dentro del mismo rango, apareciendo en ambas categorías. Además, los informes pueden usar alcances distintos —primer usuario, sesión o usuario activo—, aplicar deduplicación, identidad, umbrales de privacidad y redondeos diferentes.';variance.innerHTML=`<b>Diagnóstico automático:</b> ${comparison}<br><br>${reason}<br><br>La barra de composición usa como base los usuarios clasificados en Nuevos y Recurrentes (<b>${fmt(compositionBase)}</b>), no obliga esa suma a coincidir con Usuarios totales. Esta diferencia no implica por sí sola un error del dashboard.`}}
+function renderAudiences(m){const data=m.audiences.map(x=>({label:x.label,value:x.users}));renderBarChart('audienceBars',data,{metric:'usuarios',limit:50,empty:'No se cargó un informe de Audiencias con Nombre de la audiencia.'});renderDonutChart('audienceDonut',data,{metric:'usuarios',maxSegments:8,centerLabel:'Audiencias'});const total=metricTotal(data),rows=m.audiences.slice(0,100).map(x=>`<tr><td>${esc(x.label)}</td><td class="num">${fmt(x.users)}</td><td class="num">${fmt(x.newUsers)}</td><td class="num">${fmt(x.sessions)}</td><td class="num">${pct(total?x.users/total:0)}</td></tr>`).join('');document.getElementById('audienceTable').innerHTML=rows?`<table><thead><tr><th>Audiencia</th><th class="num">Usuarios</th><th class="num">Nuevos</th><th class="num">Sesiones</th><th class="num">Participación</th></tr></thead><tbody>${rows}</tbody></table>`:'<table><tbody><tr><td>No se detectó Nombre de la audiencia. Exporta el informe de Audiencias con esa dimensión.</td></tr></tbody></table>';const top=m.audiences[0];document.getElementById('audienceNote').innerHTML=top?`<b>Lectura técnica:</b> la audiencia <b>${esc(top.label)}</b> concentra ${pct(total?top.users/total:0)} de los usuarios clasificados por segmento de audiencia.`:'<b>Lectura técnica:</b> carga el informe de Audiencias con Nombre de la audiencia y Total de usuarios.'}
+function renderPages(m){const data=m.pageRows.map(x=>({label:x.label,value:x.views||x.users}));renderBarChart('pageBars',data,{metric:m.pageRows.some(x=>x.views)?'vistas':'usuarios',limit:40});renderDonutChart('pageDonut',data,{metric:m.pageRows.some(x=>x.views)?'vistas':'usuarios',maxSegments:8,centerLabel:'Vistas'});const total=metricTotal(data),visibleRows=m.pageRows.slice(0,100),rows=visibleRows.map(x=>`<tr><td>${esc(x.label)}</td><td class="num">${x.viewsAvailable?fmt(x.views):'—'}</td><td class="num">${x.usersAvailable?fmt(x.users):'—'}</td><td class="num">${x.bounceAvailable?pct(x.bounceRate):'—'}</td><td class="num">${pct(total?(x.views||x.users)/total:0)}</td></tr>`).join('');const pageTable=document.getElementById('pageTable');if(pageTable)pageTable.className='tablewrap limit-10';document.getElementById('pageTable').innerHTML=rows?`<table><thead><tr><th>${tip('Página','Página, ruta, pantalla o página de destino identificada en el informe cargado. El texto mostrado depende de la dimensión que fue exportada desde GA4.')}</th><th class="num">${tip('Vistas','Número total de veces que la página fue vista. Incluye vistas repetidas de una misma persona durante una o varias sesiones.')}</th><th class="num">${tip('Usuarios','Personas distintas que vieron esta página. Solo se muestra cuando el CSV contiene una métrica de usuarios compatible con la dimensión de página.')}</th><th class="num">${tip('Rebote','Porcentaje de sesiones asociadas a esta página que no tuvieron interacción. Solo se muestra si el informe incluye Rebote o Interacción y una base de sesiones compatible.')}</th><th class="num">${tip('Participación','Porcentaje directo que aporta la fila al total procesado: Vistas de la página ÷ Vistas totales × 100; si no hay Vistas, se usan Usuarios. No representa conversiones ni ventas.')}</th></tr></thead><tbody>${rows}</tbody></table>`:'<table><tbody><tr><td>Sin páginas detectadas.</td></tr></tbody></table>';const primary=m.primary?.page,hasUsersCol=!!(primary&&bestCol(primary.columns,'users')),hasBounceCol=!!(primary&&(bestCol(primary.columns,'bounceRate')||bestCol(primary.columns,'engagementRate'))),hasSessionsCol=!!(primary&&bestCol(primary.columns,'sessions')),missingUsers=visibleRows.filter(x=>!x.usersAvailable).length,missingBounce=visibleRows.filter(x=>!x.bounceAvailable).length;const userReason=hasUsersCol?`${missingUsers} de ${visibleRows.length} filas visibles no recibieron un valor de Usuarios en el CSV; los ceros reales sí se muestran como 0.`:'El informe de páginas seleccionado no incluye una columna de Usuarios compatible, por eso la tabla muestra “—” en esa métrica.';const bounceReason=hasBounceCol?`${missingBounce} de ${visibleRows.length} filas visibles no recibieron una tasa válida. ${hasSessionsCol?'El archivo sí contiene Sesiones para ponderar el cálculo.':'Al no existir Sesiones, algunas tasas no pueden ponderarse de forma confiable.'}`:'El CSV no incluye Tasa de rebote ni Tasa de interacción; el dashboard no inventa ese dato y muestra “—”.';const note=document.getElementById('pageDataNote');if(note)note.innerHTML=`<b>Diagnóstico automático:</b> ${userReason}<br><br>${bounceReason}<br><br>Esto suele ocurrir cuando GA4 exporta únicamente Vistas, cuando se combina una dimensión de página con métricas de otro alcance, por incompatibilidad entre dimensiones y métricas, o por límites/umbrales del informe. Para completar ambos campos, exporta un reporte de <b>Páginas y pantallas</b> que incluya Página o Ruta, Vistas, Usuarios, Sesiones y Tasa de rebote —o Tasa de interacción— en el mismo CSV.`}
+function renderTechnology(m){renderDonutChart('deviceDonut',m.devices,{metric:'usuarios o sesiones',maxSegments:8,centerLabel:'Tecnología'});renderDonutChart('osDonut',m.operatingSystems,{metric:'usuarios o sesiones',maxSegments:8,centerLabel:'Sistemas'});renderBarChart('deviceDetailBars',m.deviceDetails,{metric:'usuarios o sesiones',limit:100,scrollClass:'limit-10',empty:'No se cargó un CSV con Marca del dispositivo móvil o Modelo del dispositivo móvil.'});renderBarChart('browserBars',m.browsers,{metric:'usuarios o sesiones',limit:100});renderBarChart('screenBars',m.screenFormats,{metric:'usuarios o sesiones',limit:60,empty:'No se cargó un informe con la dimensión Resolución de pantalla. Disponible automáticamente al conectar con Google.'});const dev=m.devices[0],os=m.operatingSystems?.[0],detail=m.deviceDetails?.[0],browser=m.browsers[0],screen=m.screenFormats?.[0],total=metricTotal(m.devices);document.getElementById('techNote').innerHTML=dev||browser||os?`<b>Lectura técnica:</b> el dispositivo dominante es <b>${esc(dev?.label||'no detectado')}</b>${dev?` con ${pct(total?dev.value/total:0)} de participación`:''}; el sistema operativo principal es <b>${esc(os?.label||'no detectado')}</b>; ${detail?`la ${m.deviceDetailType||'marca/modelo'} principal es <b>${esc(detail.label)}</b>`:'para identificar iPhone, Samsung, Redmi u otros equipos debes cargar un CSV con <b>Marca del dispositivo móvil</b> o <b>Modelo del dispositivo móvil</b>'}; el navegador principal es <b>${esc(browser?.label||'no detectado')}</b>; ${screen?`el formato de pantalla más usado es <b>${esc(screen.label)}</b>, útil para saber a qué resolución debe verse bien el sitio primero`:'para saber en qué resolución de pantalla se ve tu sitio, carga un CSV con la dimensión Resolución de pantalla'}.`:'<b>Lectura técnica:</b> exporta Detalles tecnológicos con Categoría de dispositivo, Sistema operativo, Marca o Modelo del dispositivo y Navegador.'}
+function renderOrganic(m){document.getElementById('organicKpis').innerHTML=
+    kpi('Clics orgánicos',fmt(m.organicClicks),'Search Console','blue','Cantidad de veces que alguien buscó algo en Google, vio tu página entre los resultados y le dio clic para entrar al sitio — sin que hayas pagado por ese anuncio o posición. "Orgánico" significa que llegó de forma natural por el buscador, no por publicidad.')+
+    kpi('Impresiones',fmt(m.organicImpressions),'Apariciones en Google','','Cantidad de veces que alguna página de tu sitio apareció en los resultados de Google para una búsqueda, la haya visto la persona o no y le haya dado clic o no. Por ejemplo, si tu página aparece en el puesto 8 de una búsqueda y el usuario no baja hasta ahí, igual cuenta como una impresión.')+
+    kpi('CTR',pct(m.organicCtr),'Clics ÷ impresiones',m.organicCtr<.02?'yellow':'green','CTR significa "tasa de clics" (Click-Through Rate). Es el porcentaje de veces que, habiendo aparecido tu página en Google, la persona realmente le dio clic: Clics ÷ Impresiones × 100. Por ejemplo, si tu página apareció 1.000 veces y recibió 20 clics, el CTR es 2%. Un CTR bajo puede indicar que el título o la descripción que Google muestra no está resultando atractivo, aunque la página sí aparezca.')+
+    kpi('Posición media',m.organicPosition?fmt(m.organicPosition):'—','Promedio ponderado por impresiones','purple','El lugar promedio que ocupó tu página en los resultados de Google para las búsquedas donde apareció. Un valor de 1 significa que en promedio apareciste de primero; un valor de 11 significa que en promedio apareciste en la segunda página de resultados de Google (que normalmente empieza en la posición 11), donde muy pocas personas llegan a mirar.');
+  const useClicks=m.queries.some(x=>x.clicks>0),barData=m.queries.slice(0,40).map(x=>({label:x.label,value:useClicks?x.clicks:x.impressions}));renderBarChart('queryBars',barData,{metric:useClicks?'clics':'impresiones',limit:40});renderCtrPositionBars('queryScatter',m.queries);const rows=m.queries.slice(0,100).map(x=>`<tr><td>${esc(x.label)}</td><td class="num">${fmt(x.clicks)}</td><td class="num">${fmt(x.impressions)}</td><td class="num">${pct(x.ctr)}</td><td class="num">${x.position?fmt(x.position):'—'}</td></tr>`).join('');const queryTable=document.getElementById('queryTable');if(queryTable)queryTable.className='tablewrap limit-10';document.getElementById('queryTable').innerHTML=rows?`<table><thead><tr><th>${tip('Consulta','Palabra o frase exacta que una persona escribió en Google y para la cual apareció alguna página del sitio.')}</th><th class="num">${tip('Clics','Cantidad de veces que las personas hicieron clic en un resultado orgánico del sitio después de realizar esta consulta.')}</th><th class="num">${tip('Impresiones','Cantidad de veces que el sitio apareció en los resultados de Google para esta consulta, con o sin clic.')}</th><th class="num">${tip('CTR','Porcentaje de impresiones que terminaron en clic: Clics ÷ Impresiones × 100. Un CTR más alto produce una barra más llena en el gráfico superior.')}</th><th class="num">${tip('Posición','Puesto promedio del resultado del sitio para la consulta. Cuanto menor sea el número, mejor fue la posición media en Google.')}</th></tr></thead><tbody>${rows}</tbody></table>`:'<table><tbody><tr><td>Sin consultas orgánicas detectadas.</td></tr></tbody></table>'}
+function findDemografiaPrimary(labelKey){
+  const src=state.datasets.filter(d=>d.type==='demografia');
+  let best=null,bestScore=-1;
+  for(const d of src){
+    const labelCol=bestCol(d.columns,labelKey),metricCol=bestCol(d.columns,'users')||bestCol(d.columns,'sessions');
+    if(!labelCol||!metricCol)continue;
+    const score=d.rows.length;
+    if(score>bestScore){bestScore=score;best=d}
+  }
+  return best;
+}
+function populateCountrySelect(selectId,primary,preferred){
+  const el=document.getElementById(selectId);
+  if(!el)return;
+  if(!primary){el.innerHTML='<option value="">Todos los países</option>';return}
+  const countryCol=bestCol(primary.columns,'country');
+  if(!countryCol){el.innerHTML='<option value="">Todos los países</option>';return}
+  const countries=[...new Set(cleanRows(primary).map(r=>String(r[countryCol]||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const keep=el.value;
+  el.innerHTML='<option value="">Todos los países</option>'+countries.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(keep&&countries.includes(keep))el.value=keep;
+  else if(preferred&&countries.includes(preferred))el.value=preferred;
+}
+function filterByCountryAndGroup(primary,labelKey,countryValue){
+  if(!primary)return [];
+  const countryCol=bestCol(primary.columns,'country'),labelCol=bestCol(primary.columns,labelKey),metricCol=bestCol(primary.columns,'users')||bestCol(primary.columns,'sessions');
+  if(!labelCol||!metricCol)return [];
+  const map=new Map();
+  cleanRows(primary).forEach(r=>{
+    if(countryValue&&countryCol&&norm(r[countryCol])!==norm(countryValue))return;
+    const label=String(r[labelCol]||'').trim();if(!label)return;
+    const val=hasMetricValue(r[metricCol])?parseNum(r[metricCol]):0;
+    map.set(label,(map.get(label)||0)+val);
+  });
+  return [...map.entries()].map(([label,value])=>({label,value})).filter(x=>x.value>0).sort((a,b)=>b.value-a.value);
+}
+function renderRegionFiltered(){
+  const primary=findDemografiaPrimary('region'),sel=document.getElementById('regionCountrySelect'),chosen=sel?sel.value:'';
+  const data=filterByCountryAndGroup(primary,'region',chosen);
+  renderBarChart('regionBars',data,{metric:'usuarios',limit:60,empty:'No se cargó un informe con la dimensión Región (Provincia). En GA4 esta dimensión se llama “Región”.'});
+  renderDonutChart('regionDonut',data,{metric:'usuarios',maxSegments:8,centerLabel:'Provincias'});
+}
+function renderCityFiltered(){
+  const primary=findDemografiaPrimary('city'),sel=document.getElementById('cityCountrySelect'),chosen=sel?sel.value:'';
+  const data=filterByCountryAndGroup(primary,'city',chosen);
+  renderBarChart('cityBars',data,{metric:'usuarios',limit:300,empty:'No se cargó un informe con la dimensión Ciudad.'});
+}
+function renderDemographics(m){const countryData=m.countries.map(x=>({label:x.label,value:x.users}));renderDonutChart('genderDonut',m.genders,{metric:'usuarios',maxSegments:8,centerLabel:'Sexo'});populateCountrySelect('regionCountrySelect',findDemografiaPrimary('region'),'Ecuador');populateCountrySelect('cityCountrySelect',findDemografiaPrimary('city'),'Ecuador');renderRegionFiltered();renderCityFiltered();renderDonutChart('countryDonut',countryData,{metric:'usuarios',maxSegments:8,centerLabel:'Países'});renderBarChart('countryBars',countryData,{metric:'usuarios',limit:250,empty:'No se cargó un informe con la dimensión País.'});const gender=m.genders[0],region=m.regions[0],country=m.countries[0],cities=m.cities.slice(0,3);document.getElementById('demoNote').innerHTML=(gender||region||country||cities.length)?`<b>Lectura descriptiva:</b> ${gender?`sexo principal <b>${esc(gender.label)}</b>`:'sexo no disponible'}; ${region?`provincia/región principal <b>${esc(region.label)}</b>`:'provincia/región no disponible porque no se cargó el CSV de Región'}; ${country?`país principal <b>${esc(country.label)}</b>${country.bounceRate?` con una tasa de rebote aproximada de ${pct(country.bounceRate)}`:''}`:'país no disponible'}; ${cities.length?`ciudades principales <b>${cities.map(x=>esc(x.label)).join(', ')}</b>`:'ciudad no disponible porque no se cargó el CSV correspondiente'}. GA4 puede ocultar o agrupar información por umbrales de privacidad.`:'<b>Lectura descriptiva:</b> carga reportes demográficos con Sexo, Región (Provincia), País y Ciudad.'}
+function renderDateStatus(m){const el=document.getElementById('dateFilterStatus'),i=m.dateInfo,detected=i.detectedStart?`${dateLabel(i.detectedStart)} a ${dateLabel(i.detectedEnd)}`:'No detectado';if(!i.active){el.innerHTML=`<b>Rango detectado:</b> ${detected}. Los CSV agregados sin Fecha por fila se procesan completos.`;return}const {from,to}=selectedDateRange(),widerThanData=i.detectedStart&&((from&&from<i.detectedStart)||(to&&to>i.detectedEnd)),warn=widerThanData?` <br><br><b>⚠ El rango solicitado es más amplio que los datos actualmente cargados.</b> Este filtro solo puede recortar dentro de lo que ya tienes cargado (${detected}); no puede mostrar información que nunca se trajo. Si necesitas datos de un período distinto, vuelve a dar clic en “▶ Traer datos de Google” (o sube otro CSV) usando ese rango.`:'';el.innerHTML=`<b>Filtro solicitado:</b> ${state.settings.dateFrom||'inicio'} a ${state.settings.dateTo||'fin'}. <b>Rango detectado:</b> ${detected}. Resultado: ${i.exact} archivo(s) filtrados exactamente, ${i.aggregated} conservados como agregados y ${i.excluded} excluidos.${warn}`}
+function renderValidation(){const src=state.filteredDatasets.length?state.filteredDatasets:state.datasets;document.getElementById('validation').innerHTML=src.length?src.map(d=>{const used=[...metricKeys,...labelKeys].map(k=>[k,bestCol(d.columns,k)]).filter(x=>x[1]);return `<details class="validation"><summary>${esc(d.name)} <span class="tag info">${labelType(d.type)}</span> <span class="tag ${d.rows.length?'ok':'bad'}">${d.rows.length} filas</span> <span class="tag ${d.columns.length>1?'ok':'bad'}">${d.columns.length} columnas</span>${d.warnings?.length?` <span class="tag bad">${d.warnings.length} alerta(s)</span>`:''}</summary><div class="inside"><p><b>Separador:</b> ${d.delimiter==='\t'?'tabulación':esc(d.delimiter)}</p><p><b>Encabezado:</b> fila ${d.headerIndex+1} de ${d.rawRows}</p><p><b>Rango del reporte:</b> ${d.reportStart&&d.reportEnd?`${dateLabel(d.reportStart)} a ${dateLabel(d.reportEnd)}`:'No detectado'}</p><p><b>Filtro:</b> ${esc(d.filterStatus||'sin filtro')} ${d.filterRowsBefore!=null?`(${d.filterRowsBefore} → ${d.filterRowsAfter} filas)`:''}</p><p><b>Fecha por fila:</b> ${esc(d.rowDateCol||'No detectada')}</p><p><b>Columnas usadas:</b> ${used.length?esc(used.map(x=>`${x[0]}: ${x[1]}`).join(' · ')):'No se identificaron columnas clave.'}</p><p><b>Columnas:</b> ${esc(d.columns.join(' · '))}</p>${d.notices?.length?`<p><b>Información:</b> ${esc(d.notices.join(' | '))}</p>`:''}${d.warnings?.length?`<p><b>Advertencias reales:</b> ${esc(d.warnings.join(' | '))}</p>`:''}</div></details>`}).join(''):'<div class="empty">Sin archivos cargados.</div>'}
+function renderFileCards(){const src=state.filteredDatasets.length?state.filteredDatasets:(state.datasets.length?state.datasets:state.files.map(f=>({name:f.name,type:'pendiente',rows:[],columns:[],warnings:[],notices:[]})));document.getElementById('fileCards').innerHTML=src.length?src.map(d=>{const warningText=(d.warnings||[]).join(' | '),noticeText=(d.notices||[]).join(' | '),filterClass=d.filterRowsAfter===0&&isDateFilterActive()?'bad':d.filterStatus==='sin filtro'?'info':'warn';return `<div class="filecard"><strong title="${esc(d.name)}">${esc(d.name)}</strong><div class="status"><span class="tag info">${labelType(d.type)}</span><span class="tag ${d.rows?.length?'ok':'warn'}">${d.rows?.length||0} filas</span><span class="tag ${(d.columns?.length||0)>1?'ok':'bad'}">${d.columns?.length||0} col.</span>${d.reportStart&&d.reportEnd?`<span class="tag date">${dateLabel(d.reportStart)} → ${dateLabel(d.reportEnd)}</span>`:''}${d.filterStatus?`<span class="tag ${filterClass}">${esc(d.filterStatus)}</span>`:''}${noticeText?`<span class="tag info" title="${esc(noticeText)}">ℹ reporte agregado</span>`:''}${warningText?`<span class="tag bad" title="${esc(warningText)}">${d.warnings.length} alerta(s)</span>`:''}</div></div>`}).join(''):'<div class="empty">Sin archivos cargados.</div>'}
+
+function moduleHasData(id,m){
+  if(!m)return true;
+  const positive=v=>Number(v||0)>0;
+  switch(id){
+    case 'resumen': return positive(m.totalUsers)||positive(m.newUsers)||positive(m.returningUsers)||positive(m.sessions)||positive(m.bounce?.value);
+    case 'trafico': return Array.isArray(m.channels)&&m.channels.some(x=>positive(x.sessions)||positive(x.users));
+    case 'usuarios': return positive(m.totalUsers)||positive(m.newUsers)||positive(m.returningUsers)||(Array.isArray(m.sources)&&m.sources.length>0);
+    case 'audiencias': return Array.isArray(m.audiences)&&m.audiences.some(x=>positive(x.users)||positive(x.sessions));
+    case 'paginas': return Array.isArray(m.pageRows)&&m.pageRows.some(x=>positive(x.views)||positive(x.users));
+    case 'tecnologia': return [m.devices,m.operatingSystems,m.deviceDetails,m.browsers].some(arr=>Array.isArray(arr)&&arr.length>0);
+    case 'organico': return positive(m.organicClicks)||positive(m.organicImpressions)||(Array.isArray(m.queries)&&m.queries.length>0);
+    case 'demografia': return [m.genders,m.regions,m.countries,m.cities].some(arr=>Array.isArray(arr)&&arr.length>0);
+    case 'validacion':
+    case 'fuentes-dashboard': return Array.isArray(m.base)&&m.base.length>0;
+    default: return true;
+  }
+}
+function updateNavGroupVisibility(){
+  document.querySelectorAll('.nav .navlabel').forEach(label=>{
+    let item=label.nextElementSibling,hasVisibleLink=false;
+    while(item&&!item.classList.contains('navlabel')){
+      if(item.matches?.('a')&&!item.hidden){hasVisibleLink=true;break}
+      item=item.nextElementSibling;
+    }
+    label.hidden=!hasVisibleLink;
+  });
+}
+
+function toggleDataContainer(childId,visible){
+  const child=document.getElementById(childId);if(!child)return;
+  const container=child.closest('.chart-card')||child.closest('.card')||child;
+  container.hidden=!visible;
+  const grid=container.parentElement;
+  if(grid?.classList.contains('chart-grid'))grid.classList.add('dynamic-grid');
+}
+function setSubmoduleAvailability(m){
+  const hasChannels=Array.isArray(m.channels)&&m.channels.length>0;
+  const hasSources=Array.isArray(m.sources)&&m.sources.length>0;
+  const hasUserComposition=Number(m.newUsers||0)>0||Number(m.returningUsers||0)>0;
+  const hasTech=[m.devices,m.operatingSystems,m.deviceDetails,m.browsers].some(arr=>Array.isArray(arr)&&arr.length>0);
+  const hasGeo=[m.genders,m.regions,m.countries,m.cities].some(arr=>Array.isArray(arr)&&arr.length>0);
+  const summaryGrid=document.getElementById('summaryChannel')?.parentElement;
+  summaryGrid?.classList.add('dynamic-grid');
+  const summaryChannel=document.getElementById('summaryChannel');if(summaryChannel)summaryChannel.hidden=!hasChannels;
+  const summaryTech=document.getElementById('summaryTech');if(summaryTech)summaryTech.hidden=!hasTech;
+  const summaryLocation=document.getElementById('summaryLocation');if(summaryLocation)summaryLocation.hidden=!hasGeo;
+  toggleDataContainer('userComposition',hasUserComposition);
+  toggleDataContainer('sourceBars',hasSources);
+  toggleDataContainer('sourceTable',hasSources);
+  toggleDataContainer('deviceDonut',Array.isArray(m.devices)&&m.devices.length>0);
+  toggleDataContainer('osDonut',Array.isArray(m.operatingSystems)&&m.operatingSystems.length>0);
+  toggleDataContainer('deviceDetailBars',Array.isArray(m.deviceDetails)&&m.deviceDetails.length>0);
+  toggleDataContainer('browserBars',Array.isArray(m.browsers)&&m.browsers.length>0);
+  toggleDataContainer('genderDonut',Array.isArray(m.genders)&&m.genders.length>0);
+  toggleDataContainer('regionBars',Array.isArray(m.regions)&&m.regions.length>0);
+  toggleDataContainer('countryDonut',Array.isArray(m.countries)&&m.countries.length>0);
+  const countryBars=document.getElementById('countryBars');if(countryBars)countryBars.hidden=!(Array.isArray(m.countries)&&m.countries.length>0);
+  toggleDataContainer('cityBars',Array.isArray(m.cities)&&m.cities.length>0);
+}
+function setModuleAvailability(m){
+  EXPORT_MODULES.forEach(mod=>{
+    const available=moduleHasData(mod.id,m),section=document.getElementById(mod.id),link=document.querySelector(`.nav a[href="#${mod.id}"]`),check=document.querySelector(`.export-section[value="${mod.id}"]`);
+    if(section)section.hidden=!available;
+    if(link){link.hidden=!available;link.setAttribute('aria-disabled',available?'false':'true')}
+    if(check){
+      if(!available){
+        if(check.dataset.autoHidden!=='1')check.dataset.wasChecked=check.checked?'1':'0';
+        check.dataset.autoHidden='1';check.checked=false;check.disabled=true;
+      }else{
+        check.disabled=false;
+        if(check.dataset.autoHidden==='1'){
+          check.checked=check.dataset.wasChecked==='1';
+          delete check.dataset.autoHidden;delete check.dataset.wasChecked;
+        }
+      }
+    }
+  });
+  setSubmoduleAvailability(m);
+  updateNavGroupVisibility();
+  updateExportSelection();
+  requestAnimationFrame(syncActiveNavToViewport);
+}
+function restoreAllModules(){
+  EXPORT_MODULES.forEach(mod=>{
+    const section=document.getElementById(mod.id),link=document.querySelector(`.nav a[href="#${mod.id}"]`),check=document.querySelector(`.export-section[value="${mod.id}"]`);
+    if(section)section.hidden=false;
+    if(link){link.hidden=false;link.setAttribute('aria-disabled','false')}
+    if(check){check.disabled=false;if(check.dataset.autoHidden==='1')check.checked=check.dataset.wasChecked==='1';delete check.dataset.autoHidden;delete check.dataset.wasChecked}
+  });
+  document.querySelectorAll('.nav .navlabel').forEach(x=>x.hidden=false);
+  document.querySelectorAll('.chart-card[hidden],.card[hidden],.kpi[hidden]').forEach(x=>x.hidden=false);
+  const countryBars=document.getElementById('countryBars');if(countryBars)countryBars.hidden=false;
+  updateExportSelection();
+}
+function setActiveNav(id){
+  const links=[...document.querySelectorAll('.nav a')];
+  links.forEach(link=>{
+    const active=!link.hidden&&link.getAttribute('href')===`#${id}`;
+    link.classList.toggle('active',active);
+    if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+  });
+}
+function syncActiveNavToViewport(){
+  const links=[...document.querySelectorAll('.nav a')].filter(link=>!link.hidden);
+  if(!links.length)return;
+  const offset=window.matchMedia('(max-width:900px)').matches?132:86;
+  let chosen=links[0];
+  for(const link of links){
+    const id=link.getAttribute('href')?.slice(1),section=id?document.getElementById(id):null;
+    if(!section||section.hidden)continue;
+    const rect=section.getBoundingClientRect();
+    if(rect.top<=offset+18)chosen=link;
+    if(rect.top>offset+18)break;
+  }
+  setActiveNav(chosen.getAttribute('href').slice(1));
+}
+let navScrollTick=false;
+function scheduleActiveNavSync(){
+  if(navScrollTick)return;
+  navScrollTick=true;
+  requestAnimationFrame(()=>{navScrollTick=false;syncActiveNavToViewport()});
+}
+function renderAll(m){safe('resumen',()=>renderSummary(m));safe('trafficTrend',()=>renderTrafficTrend());safe('trafico',()=>renderTraffic(m));safe('sessionsTrend',()=>renderSessionsTrend());safe('bounceTrend',()=>renderBounceTrend());safe('usuarios',()=>renderUsers(m));safe('userChannelTrend',()=>renderUserChannelTrend());safe('userDayHourHeatmap',()=>renderUserDayHourBalanceChart());safe('userBreakdownTrend',()=>renderUserBreakdownTrend());safe('audiencias',()=>renderAudiences(m));safe('paginas',()=>renderPages(m));safe('tecnologia',()=>renderTechnology(m));safe('organico',()=>renderOrganic(m));safe('demografia',()=>renderDemographics(m));safe('validacion',()=>renderValidation());renderFileCards();renderDateStatus(m);setModuleAvailability(m);updateExportSelection()}
+
+function initCardExportChecks(){
+  document.querySelectorAll('.module-body .chart-card, .module-body .card').forEach(card=>{
+    if(card.querySelector(':scope > .card-export-check'))return;
+    card.classList.add('export-card');
+    const bar=document.createElement('label');
+    bar.className='card-export-check';
+    bar.innerHTML='<input type="checkbox" class="card-export-toggle" checked> Incluir en HTML';
+    card.insertBefore(bar,card.firstChild);
+    bar.querySelector('input').addEventListener('change',e=>card.classList.toggle('export-off',!e.target.checked));
+  });
+  document.querySelectorAll('.module-body .ai-accordion, .module-body .detail-accordion').forEach(acc=>{
+    const summary=acc.querySelector(':scope > summary');
+    if(!summary||summary.querySelector('.card-export-check'))return;
+    acc.classList.add('export-card');
+    const bar=document.createElement('label');
+    bar.className='card-export-check';
+    bar.setAttribute('onclick','event.stopPropagation()');
+    bar.innerHTML='<input type="checkbox" class="card-export-toggle" checked> Incluir en HTML';
+    summary.appendChild(bar);
+    bar.querySelector('input').addEventListener('change',e=>{e.stopPropagation();acc.classList.toggle('export-off',!e.target.checked)});
+  });
+}
+function initExportChecks(){EXPORT_MODULES.forEach(mod=>{const section=document.getElementById(mod.id),summary=section?.querySelector(':scope > details.accordion > summary');if(!summary||summary.querySelector('.module-select'))return;const chevron=summary.querySelector('.chevron'),actions=document.createElement('span');actions.className='summary-actions';actions.innerHTML=`<label class="module-select" onclick="event.stopPropagation()"><input type="checkbox" class="export-section" value="${mod.id}" ${mod.checked?'checked':''}> Incluir en HTML</label>`;if(chevron){chevron.remove();actions.appendChild(chevron)}summary.appendChild(actions)});document.querySelectorAll('.export-section').forEach(x=>x.addEventListener('change',updateExportSelection));updateExportSelection()}
+function selectedExportIds(){return [...document.querySelectorAll('.export-section:checked:not(:disabled)')].map(x=>x.value)}
+function setAllExportSections(value){document.querySelectorAll('.export-section:not(:disabled)').forEach(x=>x.checked=value);updateExportSelection()}
+function toggleAllAccordions(open){document.querySelectorAll('details.accordion').forEach(d=>d.open=open)}
+function updateExportSelection(){const available=[...document.querySelectorAll('.export-section:not(:disabled)')],n=available.filter(x=>x.checked).length,total=available.length,el=document.getElementById('exportSelectionStatus');if(el)el.textContent=state.model?`${n} de ${total} módulos disponibles seleccionados para el informe HTML.`:`${n} de ${total} módulos seleccionados para el informe HTML.`;const btn=document.getElementById('exportBtn');if(btn&&state.model)btn.disabled=n===0}
+
+function setTop(msg){document.getElementById('topStatus').textContent=msg}
+function banner(type,msg){const el=document.getElementById('statusBanner');el.className='statusBanner '+type;el.innerHTML=`<span>${type==='ok'?'✅':type==='bad'?'🔴':'⚠️'}</span><span>${esc(msg)}</span>`}
+function pickFiles(){document.getElementById('csvInput').click()}
+document.getElementById('csvInput').addEventListener('change',e=>{state.files=[...e.target.files].filter(f=>/\.csv$/i.test(f.name));state.datasets=[];state.filteredDatasets=[];state.model=null;document.getElementById('processBtn').disabled=!state.files.length;document.getElementById('exportBtn').disabled=true;setTop(`${state.files.length} CSV seleccionado(s). Presiona Procesar.`);const totalBytes=state.files.reduce((s,f)=>s+(f.size||0),0);if(totalBytes>15*1024*1024)banner('warn',`Archivos grandes (${(totalBytes/1024/1024).toFixed(1)} MB en total). El procesamiento puede tardar varios segundos y la pestaña podría no responder mientras tanto; evita cerrarla.`);renderFileCards()});
+async function readFiles(){state.datasets=[];for(const file of state.files){const text=await readTextFile(file),parsed=parseCSV(text),type=classify(file.name,parsed.columns);if(type==='otro')parsed.warnings=[...(parsed.warnings||[]),'No se pudo clasificar este archivo en ningún módulo del dashboard (tráfico, usuarios, audiencias, páginas, tecnología, orgánico o demografía). No se usará en los cálculos. Verifica que sea una exportación estándar de GA4 o Search Console.'];state.datasets.push({name:file.name,type,...parsed})}}
+function readSettings(){state.settings.dateFrom=document.getElementById('dateFrom').value||'';state.settings.dateTo=document.getElementById('dateTo').value||'';state.settings.dateMode='safe'}
+async function processDashboard(){if(!state.files.length)return;readSettings();setTop('Procesando archivos...');banner('warn','Procesando y validando CSV...');try{await readFiles();state.dataSourceName=csvSourceName();state.model=buildModel();renderAll(state.model);document.getElementById('exportBtn').disabled=selectedExportIds().length===0;setTop(`${state.datasets.length} reportes procesados · ${state.model.warnings.length} advertencia(s)`);banner(state.model.warnings.length?'warn':'ok',state.model.warnings.length?`Dashboard procesado con ${state.model.warnings.length} advertencia(s). Revisa Validación técnica.`:'Dashboard procesado correctamente.')}catch(err){console.error(err);setTop('Error de procesamiento');banner('bad','No fue posible procesar uno o más archivos. Verifica que sean CSV válidos.') }}
+function csvSourceName(){const names=state.files.map(f=>f.name.replace(/\.csv$/i,''));if(!names.length)return 'CSV';return names.length<=2?names.join('+'):`${names[0]}+${names.length-1}_mas`}
+function applyDateFilter(){if(!state.datasets.length){alert('Primero carga y procesa los CSV.');return}readSettings();state.model=buildModel();renderAll(state.model);banner('ok','Filtro de fechas aplicado. Revisa si el resultado fue exacto o agregado.')}
+function fillDetectedDateRange(){const ranges=state.datasets.filter(d=>d.reportStart&&d.reportEnd).map(d=>({start:d.reportStart,end:d.reportEnd}));if(!ranges.length){alert('No se detectó un rango en los CSV procesados.');return}let min=ranges[0].start,max=ranges[0].end;ranges.forEach(r=>{if(r.start<min)min=r.start;if(r.end>max)max=r.end});document.getElementById('dateFrom').value=dateISO(min);document.getElementById('dateTo').value=dateISO(max);applyDateFilter()}
+/* ===== INTEGRACIÓN GOOGLE (BETA) =====
+   Alternativa a subir CSV: trae datos en vivo desde GA4 Data API y Search Console API
+   usando OAuth 2.0 100% en el navegador (sin backend propio, sin guardar tokens).
+   REQUIERE, antes de usarse:
+   1) Un proyecto en Google Cloud Console con la "Google Analytics Data API",
+      "Google Analytics Admin API" y "Search Console API" habilitadas.
+   2) Una credencial OAuth 2.0 tipo "Aplicación web", con el origen donde sirvas
+      este archivo agregado en "Authorized JavaScript origins" (http://localhost
+      funciona para pruebas; abrir el archivo con doble clic (file://) NO funciona).
+   3) Reemplazar GOOGLE_CLIENT_ID abajo por el Client ID de esa credencial.
+   4) Mientras el proyecto esté en modo "Prueba" en la pantalla de consentimiento
+      OAuth, solo las cuentas de Google que agregues como "Test users" podrán conectar.
+   No modifica el flujo de CSV existente: ambos caminos conviven y usan el mismo
+   pipeline (buildModel/renderAll) una vez que arman los mismos objetos "dataset". */
+const GOOGLE_CLIENT_ID='782261786699-9g2kosbu1esa5c753riapd9de69nuu45.apps.googleusercontent.com';
+const GOOGLE_SCOPES='https://www.googleapis.com/auth/analytics.readonly https://www.googleapis.com/auth/webmasters.readonly';
+const googleState={tokenClient:null,accessToken:null,ga4Properties:[],gscSites:[]};
+
+function loadGis(){return new Promise((resolve,reject)=>{if(window.google?.accounts?.oauth2)return resolve();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.defer=true;s.onload=()=>resolve();s.onerror=()=>reject(new Error('No se pudo cargar el script de autenticación de Google (revisa tu conexión o bloqueadores de script).'));document.head.appendChild(s)})}
+
+async function connectGoogle(){
+  const statusEl=document.getElementById('googleStatus');
+  if(!GOOGLE_CLIENT_ID||GOOGLE_CLIENT_ID.startsWith('TU_CLIENT_ID')){statusEl.textContent='Falta configurar el Client ID de Google Cloud Console en el código (constante GOOGLE_CLIENT_ID) antes de poder conectar.';return}
+  try{
+    statusEl.textContent='Cargando autenticación de Google...';
+    await loadGis();
+    await new Promise((resolve,reject)=>{
+      googleState.tokenClient=google.accounts.oauth2.initTokenClient({
+        client_id:GOOGLE_CLIENT_ID,
+        scope:GOOGLE_SCOPES,
+        callback:(resp)=>{if(resp.error){reject(new Error(resp.error));return}googleState.accessToken=resp.access_token;resolve()}
+      });
+      googleState.tokenClient.requestAccessToken({prompt:''});
+    });
+    statusEl.textContent='Conectado. Cargando propiedades disponibles...';
+    await Promise.all([fetchGA4Properties(),fetchGSCSites()]);
+    document.getElementById('googleConnectBtn').hidden=true;
+    document.getElementById('googleDisconnectBtn').hidden=false;
+    document.getElementById('googlePickers').hidden=false;
+    statusEl.textContent=`Conectado. ${googleState.ga4Properties.length} propiedad(es) de GA4 y ${googleState.gscSites.length} sitio(s) de Search Console detectados.`;
+  }catch(err){
+    console.error(err);
+    statusEl.textContent='No fue posible conectar con Google: '+esc(err.message||'error desconocido')+'. Verifica el Client ID, el origen autorizado y que tu cuenta esté agregada como usuario de prueba en Google Cloud Console.';
+  }
+}
+
+function disconnectGoogle(){
+  if(googleState.accessToken&&window.google?.accounts?.oauth2)google.accounts.oauth2.revoke(googleState.accessToken,()=>{});
+  googleState.accessToken=null;googleState.ga4Properties=[];googleState.gscSites=[];
+  document.getElementById('googleConnectBtn').hidden=false;
+  document.getElementById('googleDisconnectBtn').hidden=true;
+  document.getElementById('googlePickers').hidden=true;
+  document.getElementById('googleStatus').textContent='Desconectado. Los datos seguirán viniendo de los CSV mientras no conectes una cuenta.';
+}
+
+async function googleFetch(url,opts={}){
+  const res=await fetch(url,{...opts,headers:{...(opts.headers||{}),Authorization:'Bearer '+googleState.accessToken,'Content-Type':'application/json'}});
+  if(!res.ok){const body=await res.text().catch(()=>'');throw new Error(`${res.status} ${res.statusText} — ${body.slice(0,200)}`)}
+  return res.json();
+}
+
+async function fetchGA4Properties(){
+  const data=await googleFetch('https://analyticsadmin.googleapis.com/v1beta/accountSummaries?pageSize=200');
+  const props=[];
+  (data.accountSummaries||[]).forEach(acc=>(acc.propertySummaries||[]).forEach(p=>props.push({id:p.property.replace('properties/',''),label:`${acc.displayName} · ${p.displayName}`})));
+  googleState.ga4Properties=props;
+  const sel=document.getElementById('ga4PropertySelect');
+  sel.innerHTML=props.length?props.map(p=>`<option value="${esc(p.id)}">${esc(p.label)}</option>`).join(''):'<option value="">Sin propiedades disponibles</option>';
+}
+
+async function fetchGSCSites(){
+  const data=await googleFetch('https://www.googleapis.com/webmasters/v3/sites');
+  const sites=(data.siteEntry||[]).map(s=>s.siteUrl);
+  googleState.gscSites=sites;
+  const sel=document.getElementById('gscSiteSelect');
+  sel.innerHTML=sites.length?sites.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join(''):'<option value="">Sin sitios disponibles</option>';
+}
+
+async function runGA4Report(propertyId,dimensionNames,metricNames,dateFrom,dateTo){
+  const names=Array.isArray(dimensionNames)?dimensionNames:[dimensionNames];
+  const body={dimensions:names.map(name=>({name})),metrics:metricNames.map(name=>({name})),dateRanges:[{startDate:dateFrom,endDate:dateTo}],limit:100000};
+  return googleFetch(`https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,{method:'POST',body:JSON.stringify(body)});
+}
+
+function ga4ResponseToDataset(name,type,dimHeaders,metricHeaders,apiResponse,reportStart,reportEnd,rowDateCol=null){
+  const headers=Array.isArray(dimHeaders)?dimHeaders:[dimHeaders];
+  const columns=[...headers,...metricHeaders];
+  const rows=(apiResponse.rows||[]).map(r=>{const row={};headers.forEach((h,i)=>{row[h]=r.dimensionValues?.[i]?.value??''});metricHeaders.forEach((h,i)=>{row[h]=r.metricValues?.[i]?.value??'0'});return row});
+  return {name,type,columns,rows,delimiter:',',headerIndex:0,rawRows:rows.length+1,warnings:[],notices:['Datos obtenidos automáticamente desde la API de Google Analytics.'],reportStart,reportEnd,rowDateCol};
+}
+
+/* Busca, entre los datasets ya cargados (CSV o API), el que tenga fecha por fila + una columna de
+   agrupación (canal, fuente, etc.) + una métrica, y arma series diarias por grupo para graficar
+   la tendencia en el tiempo. Devuelve null si ningún dataset trae desglose diario. */
+function extractDailySeries(datasets,labelKey,metricKey,{limit=5,from=null,to=null,singleLabel='Valor'}={}){
+  let best=null,bestScore=-1;
+  for(const d of datasets){
+    const dateCol=d.rowDateCol||findRowDateCol(d.columns),labelCol=labelKey?bestCol(d.columns,labelKey):null,metricCol=bestCol(d.columns,metricKey);
+    if(!dateCol||(labelKey&&!labelCol)||!metricCol)continue;
+    let score=d.rows.length;
+    if(!labelKey){
+      const uniqueDates=new Set(cleanRows(d).map(r=>r[dateCol])).size;
+      if(uniqueDates&&d.rows.length>uniqueDates*1.2)score-=1000000;
+    }
+    if(score>bestScore){bestScore=score;best={d,dateCol,labelCol,metricCol}}
+  }
+  if(!best)return null;
+  const {d,dateCol,labelCol,metricCol}=best,byDate=new Map(),totalsByLabel=new Map();
+  cleanRows(d).forEach(r=>{
+    const dt=parseReportDateToken(r[dateCol]);
+    if(!dt)return;
+    if(from&&dt<from)return;
+    if(to&&dt>to)return;
+    const iso=dateISO(dt),label=labelCol?(String(r[labelCol]||'(sin dato)').trim()||'(sin dato)'):singleLabel,val=hasMetricValue(r[metricCol])?parseNum(r[metricCol]):0;
+    if(!byDate.has(iso))byDate.set(iso,{date:dt,values:{}});
+    const entry=byDate.get(iso);
+    entry.values[label]=(entry.values[label]||0)+val;
+    totalsByLabel.set(label,(totalsByLabel.get(label)||0)+val);
+  });
+  if(!byDate.size)return null;
+  const dates=[...byDate.values()].sort((a,b)=>a.date-b.date);
+  const channels=[...totalsByLabel.entries()].sort((a,b)=>b[1]-a[1]).slice(0,limit).map(x=>x[0]);
+  return {dates,channels};
+}
+function extractMetricSeries(datasets,metricSpecs,{from=null,to=null}={}){
+  let best=null,bestScore=-1;
+  for(const d of datasets){
+    const dateCol=d.rowDateCol||findRowDateCol(d.columns);
+    if(!dateCol)continue;
+    const cols=metricSpecs.map(spec=>bestCol(d.columns,spec.key));
+    if(cols.some(c=>!c))continue;
+    let score=d.rows.length;
+    const uniqueDates=new Set(cleanRows(d).map(r=>r[dateCol])).size;
+    if(uniqueDates&&d.rows.length>uniqueDates*1.2)score-=1000000;
+    if(score>bestScore){bestScore=score;best={d,dateCol,cols}}
+  }
+  if(!best)return null;
+  const {d,dateCol,cols}=best,byDate=new Map();
+  cleanRows(d).forEach(r=>{
+    const dt=parseReportDateToken(r[dateCol]);
+    if(!dt)return;
+    if(from&&dt<from)return;
+    if(to&&dt>to)return;
+    const iso=dateISO(dt);
+    if(!byDate.has(iso))byDate.set(iso,{date:dt,values:{}});
+    const entry=byDate.get(iso);
+    metricSpecs.forEach((spec,i)=>{const val=hasMetricValue(r[cols[i]])?parseNum(r[cols[i]]):0;entry.values[spec.label]=(entry.values[spec.label]||0)+val});
+  });
+  if(!byDate.size)return null;
+  const dates=[...byDate.values()].sort((a,b)=>a.date-b.date);
+  return {dates,channels:metricSpecs.map(s=>s.label)};
+}
+function extractUserBreakdownSeries(datasets,opts={}){
+  const base=extractMetricSeries(datasets,[{key:'users',label:'Usuarios totales'},{key:'newUsers',label:'Usuarios nuevos'}],opts);
+  if(!base)return null;
+  base.dates.forEach(d=>{const total=d.values['Usuarios totales']||0,nuevos=d.values['Usuarios nuevos']||0;d.values['Usuarios recurrentes']=Math.max(0,total-nuevos)});
+  base.channels=['Usuarios totales','Usuarios nuevos','Usuarios recurrentes'];
+  return base;
+}
+function fullDateRangeOfDatasets(datasets){
+  let min=null,max=null;
+  datasets.forEach(d=>{
+    const dateCol=d.rowDateCol||findRowDateCol(d.columns);
+    if(!dateCol)return;
+    cleanRows(d).forEach(r=>{const dt=parseReportDateToken(r[dateCol]);if(!dt)return;if(!min||dt<min)min=dt;if(!max||dt>max)max=dt});
+  });
+  return {min,max};
+}
+
+/* Dibuja un gráfico de líneas SVG (Total punteado + una línea por grupo) con una franja invisible
+   por día que reutiliza el sistema de tooltips (.tip/data-tip) ya existente en el dashboard. */
+const trendHidden={};
+function toggleTrendChannel(id,label){
+  const set=trendHidden[id]||(trendHidden[id]=new Set());
+  if(set.has(label))set.delete(label);else set.add(label);
+  const cfg=TREND_CHARTS[id];
+  if(cfg)cfg.render();
+}
+function renderTrendChart(id,series,{metric='usuarios',formatter=fmt,showTotal=true,aggregate='sum',empty='No hay datos con desglose diario disponibles. Conecta tu cuenta de Google o sube un CSV que incluya la columna Fecha para ver esta gráfica.'}={}){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(!series||!series.dates.length){el.innerHTML=`<div class="empty chart-empty">${esc(empty)}</div>`;return}
+  const hidden=trendHidden[id]||(trendHidden[id]=new Set());
+  const {dates,channels}=series,n=dates.length;
+  const totals=dates.map(d=>channels.reduce((s,c)=>s+(d.values[c]||0),0));
+  const maxVal=Math.max(...totals,...dates.flatMap(d=>channels.map(c=>d.values[c]||0)))||1;
+  const W=860,H=280,padL=46,padR=16,padT=16,padB=34,innerW=W-padL-padR,innerH=H-padT-padB;
+  const x=i=>n<=1?padL+innerW/2:padL+innerW*i/(n-1),y=v=>padT+innerH-(v/maxVal)*innerH;
+  const pathFor=vals=>vals.map((v,i)=>`${i===0?'M':'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  let lines='';
+  if(showTotal&&!hidden.has('Total'))lines+=`<path d="${pathFor(totals)}" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="5,4"/>`;
+  channels.forEach((c,ci)=>{if(hidden.has(c))return;lines+=`<path d="${pathFor(dates.map(d=>d.values[c]||0))}" fill="none" stroke="${CHART_COLORS[ci%CHART_COLORS.length]}" stroke-width="2.25"/>`});
+  const gridVals=[0,maxVal/2,maxVal],grid=gridVals.map(v=>`<line x1="${padL}" x2="${W-padR}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="var(--border)" stroke-width="1"/><text x="${padL-8}" y="${(y(v)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted2)">${esc(formatter(v))}</text>`).join('');
+  const labelCount=Math.min(6,n),step=Math.max(1,Math.round((n-1)/(labelCount-1||1)));
+  let xlabels='';
+  for(let i=0;i<n;i+=step)xlabels+=`<text x="${x(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="9" fill="var(--muted2)">${esc(dateLabel(dates[i].date).slice(5))}</text>`;
+  if((n-1)%step!==0)xlabels+=`<text x="${x(n-1).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="9" fill="var(--muted2)">${esc(dateLabel(dates[n-1].date).slice(5))}</text>`;
+  const bandW=n>1?innerW/(n-1):innerW;
+  let hover='';
+  dates.forEach((d,i)=>{
+    const tipLines=[dateLabel(d.date)];
+    if(showTotal&&!hidden.has('Total'))tipLines.push(`Total: ${formatter(totals[i])} ${metric}`);
+    channels.forEach(c=>{if(!hidden.has(c))tipLines.push(`${c}: ${formatter(d.values[c]||0)}`)});
+    hover+=`<rect class="trend-hover tip" data-tip="${esc(tipLines.join('\n'))}" x="${(x(i)-bandW/2).toFixed(1)}" y="${padT}" width="${bandW.toFixed(1)}" height="${innerH}" fill="transparent"/>`;
+  });
+  const svg=`<svg viewBox="0 0 ${W} ${H}" class="trend-svg" preserveAspectRatio="none">${grid}${lines}${xlabels}${hover}</svg>`;
+  const legendItems=(showTotal?[{label:'Total',color:'var(--muted)'}]:[]).concat(channels.map((c,ci)=>({label:c,color:CHART_COLORS[ci%CHART_COLORS.length]})));
+  const legend=`<div class="legend" style="max-height:none">${legendItems.map(li=>{const off=hidden.has(li.label),vals=li.label==='Total'?totals:dates.map(d=>d.values[li.label]||0),total=aggregate==='avg'?(vals.length?vals.reduce((s,v)=>s+v,0)/vals.length:0):vals.reduce((s,v)=>s+v,0),totalWord=aggregate==='avg'?'Promedio':'Total',safeLabel=esc(li.label).replace(/'/g,'&#39;');return `<div class="legend-item trend-toggle${off?' legend-off':''} tip" data-tip="${esc(li.label)}: ${esc(formatter(total))} ${esc(metric)} (${totalWord.toLowerCase()} del período mostrado). Clic para ${off?'mostrar':'ocultar'} esta serie en la gráfica." onclick="toggleTrendChannel('${id}','${safeLabel}')"><span class="legend-swatch" style="background:${li.color}"></span><span class="legend-label">${esc(li.label)}</span><span class="legend-value">${esc(formatter(total))}</span></div>`}).join('')}</div>`;
+  el.innerHTML=`<div class="trend-wrap">${svg}</div>${legend}<div class="scale-note"><span class="tipi">i</span> Clic en cualquier elemento de la leyenda para mostrarlo u ocultarlo en la gráfica.</div>`;
+}
+
+function readTrendRange(id){
+  const fromEl=document.getElementById(id+'From'),toEl=document.getElementById(id+'To');
+  return {from:fromEl&&fromEl.value?parseReportDateToken(fromEl.value):null,to:toEl&&toEl.value?parseReportDateToken(toEl.value):null};
+}
+const DAY_NAMES=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const DAY_NAMES_SHORT=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAY_DISPLAY_ORDER=[1,2,3,4,5,6,0];
+function extractDayHourBalance(datasets,{from=null,to=null}={}){
+  let best=null,bestScore=-1;
+  for(const d of datasets){
+    const dateCol=d.rowDateCol||findRowDateCol(d.columns),dayCol=bestCol(d.columns,'dayOfWeek'),hourCol=bestCol(d.columns,'hour'),metricCol=bestCol(d.columns,'users')||bestCol(d.columns,'sessions');
+    if(!dateCol||!dayCol||!hourCol||!metricCol)continue;
+    const score=d.rows.length;
+    if(score>bestScore){bestScore=score;best={d,dateCol,dayCol,hourCol,metricCol}}
+  }
+  if(!best)return null;
+  const {d,dateCol,dayCol,hourCol,metricCol}=best,grid=Array.from({length:7},()=>Array(24).fill(0)),dayTotals=Array(7).fill(0),hourTotals=Array(24).fill(0);
+  let any=false;
+  cleanRows(d).forEach(r=>{
+    const dt=parseReportDateToken(r[dateCol]);
+    if(!dt)return;
+    if(from&&dt<from)return;
+    if(to&&dt>to)return;
+    const dayRaw=parseInt(r[dayCol],10),hourRaw=parseInt(r[hourCol],10);
+    if(isNaN(dayRaw)||isNaN(hourRaw)||dayRaw<0||dayRaw>6||hourRaw<0||hourRaw>23)return;
+    const val=hasMetricValue(r[metricCol])?parseNum(r[metricCol]):0;
+    grid[dayRaw][hourRaw]+=val;dayTotals[dayRaw]+=val;hourTotals[hourRaw]+=val;any=true;
+  });
+  return any?{grid,dayTotals,hourTotals}:null;
+}
+function renderDayHourHeatmap(id,balance,{metric='usuarios',formatter=fmt}={}){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(!balance){el.innerHTML='<div class="empty chart-empty">No hay datos de hora/día disponibles todavía. Esta vista requiere datos horarios de Google Analytics dentro del rango seleccionado arriba.</div>';return}
+  const {grid}=balance,max=Math.max(1,...grid.flat());
+  let html='<div class="heatmap-wrap"><div class="heatmap-grid"><div></div>';
+  for(let h=0;h<24;h++)html+=`<div class="heatmap-hour-label">${h}</div>`;
+  DAY_DISPLAY_ORDER.forEach(dIdx=>{
+    html+=`<div class="heatmap-day-label">${DAY_NAMES_SHORT[dIdx]}</div>`;
+    for(let h=0;h<24;h++){const v=grid[dIdx][h],intensity=max?v/max:0;html+=`<div class="heatmap-cell tip" style="background:rgba(255,121,0,${(0.06+intensity*0.88).toFixed(2)})" data-tip="${esc(DAY_NAMES[dIdx])}, ${String(h).padStart(2,'0')}:00 h — ${esc(formatter(v))} ${esc(metric)}"></div>`}
+  });
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+function renderUserDayHourBalance(from,to){
+  const src=state.datasets.filter(d=>d.type==='usuarios'),balance=extractDayHourBalance(src,{from,to});
+  renderDayHourHeatmap('userDayHourHeatmap',balance,{metric:'usuarios'});
+  const dayData=balance?DAY_DISPLAY_ORDER.map(i=>({label:DAY_NAMES[i],value:balance.dayTotals[i]})):[];
+  const hourData=balance?Array.from({length:24},(_,h)=>({label:String(h).padStart(2,'0')+':00',value:balance.hourTotals[h]})):[];
+  renderBarChart('userDayBars',dayData,{metric:'usuarios',limit:7,empty:'Sin datos de día/hora disponibles.'});
+  renderBarChart('userHourBars',hourData,{metric:'usuarios',limit:24,empty:'Sin datos de día/hora disponibles.'});
+  const noteEl=document.getElementById('userDayHourNote');
+  if(!noteEl)return;
+  if(!balance){noteEl.innerHTML='Sin datos de hora/día disponibles todavía.';return}
+  let peakD=0,peakH=0,peakV=-1;
+  balance.grid.forEach((row,d)=>row.forEach((v,h)=>{if(v>peakV){peakV=v;peakD=d;peakH=h}}));
+  const topDay=DAY_DISPLAY_ORDER.reduce((best,i)=>balance.dayTotals[i]>balance.dayTotals[best]?i:best,DAY_DISPLAY_ORDER[0]);
+  const topHour=Array.from({length:24},(_,h)=>h).reduce((best,h)=>balance.hourTotals[h]>balance.hourTotals[best]?h:best,0);
+  noteEl.innerHTML=`<b>Momento de mayor impacto:</b> ${esc(DAY_NAMES[peakD])} a las ${String(peakH).padStart(2,'0')}:00, con ${fmt(peakV)} usuarios en esa combinación exacta. <b>Día con más tráfico en total:</b> ${esc(DAY_NAMES[topDay])}. <b>Hora con más tráfico en total:</b> ${String(topHour).padStart(2,'0')}:00.`;
+}
+function renderUserChannelTrend(){
+  const src=state.datasets.filter(d=>d.type==='usuarios'),{from,to}=readTrendRange('userChannelTrend');
+  renderTrendChart('userChannelTrend',extractDailySeries(src,'channelFirst','users',{limit:5,from,to}),{metric:'usuarios'});
+}
+function renderUserDayHourBalanceChart(){
+  const {from,to}=readTrendRange('userDayHour');
+  renderUserDayHourBalance(from,to);
+}
+function renderTrafficTrend(){
+  const src=state.datasets.filter(d=>d.type==='trafico'),{from,to}=readTrendRange('trafficTrend');
+  renderTrendChart('trafficTrend',extractDailySeries(src,'channelSession','sessions',{limit:5,from,to}),{metric:'sesiones'});
+}
+function renderSessionsTrend(){
+  const src=state.datasets.filter(d=>d.type==='trafico'),{from,to}=readTrendRange('sessionsTrend');
+  renderTrendChart('sessionsTrend',extractDailySeries(src,null,'sessions',{from,to,singleLabel:'Sesiones'}),{metric:'sesiones',showTotal:false,empty:'No hay datos diarios de sesiones disponibles todavía. Conecta con Google para verlos.'});
+}
+function renderBounceTrend(){
+  const src=state.datasets.filter(d=>d.type==='trafico'),{from,to}=readTrendRange('bounceTrend');
+  renderTrendChart('bounceTrend',extractDailySeries(src,null,'bounceRate',{from,to,singleLabel:'Tasa de rebote'}),{metric:'de rebote',formatter:pct,showTotal:false,aggregate:'avg',empty:'No hay datos diarios de tasa de rebote disponibles todavía. Conecta con Google para verlos.'});
+}
+function renderUserBreakdownTrend(){
+  const src=state.datasets.filter(d=>d.type==='usuarios'),{from,to}=readTrendRange('userBreakdownTrend');
+  renderTrendChart('userBreakdownTrend',extractUserBreakdownSeries(src,{from,to}),{metric:'usuarios',showTotal:false,empty:'No hay datos diarios de usuarios disponibles todavía. Conecta con Google para verlos.'});
+}
+/* Cada gráfica de tendencia tiene su propio rango de fechas, independiente del Filtro de fechas
+   responsable general: cambiar uno no afecta al otro ni al resto del dashboard. */
+const TREND_CHARTS={
+  trafficTrend:{type:'trafico',render:renderTrafficTrend},
+  userChannelTrend:{type:'usuarios',render:renderUserChannelTrend},
+  userDayHour:{type:'usuarios',render:renderUserDayHourBalanceChart},
+  sessionsTrend:{type:'trafico',render:renderSessionsTrend},
+  bounceTrend:{type:'trafico',render:renderBounceTrend},
+  userBreakdownTrend:{type:'usuarios',render:renderUserBreakdownTrend}
+};
+function applyTrendRange(id){const cfg=TREND_CHARTS[id];if(cfg)cfg.render()}
+function useFullTrendRange(id){
+  const cfg=TREND_CHARTS[id];if(!cfg)return;
+  const src=state.datasets.filter(d=>d.type===cfg.type),{min,max}=fullDateRangeOfDatasets(src);
+  const fromEl=document.getElementById(id+'From'),toEl=document.getElementById(id+'To');
+  if(min&&max){fromEl.value=dateISO(min);toEl.value=dateISO(max)}
+  else{fromEl.value='';toEl.value=''}
+  cfg.render();
+}
+
+async function runGSCReport(siteUrl,dateFrom,dateTo){
+  const body={startDate:dateFrom,endDate:dateTo,dimensions:['query'],rowLimit:5000};
+  return googleFetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,{method:'POST',body:JSON.stringify(body)});
+}
+
+function gscResponseToDataset(apiResponse,reportStart,reportEnd){
+  const columns=['Consulta','Clics','Impresiones','CTR','Posición media'];
+  const rows=(apiResponse.rows||[]).map(r=>({'Consulta':r.keys?.[0]??'','Clics':r.clicks??0,'Impresiones':r.impressions??0,'CTR':r.ctr??0,'Posición media':r.position??0}));
+  return {name:'Search Console · Consultas (API)',type:'organico',columns,rows,delimiter:',',headerIndex:0,rawRows:rows.length+1,warnings:[],notices:['Datos obtenidos automáticamente desde la API de Search Console.'],reportStart,reportEnd,rowDateCol:null};
+}
+
+async function processFromGoogle(){
+  const propertyId=document.getElementById('ga4PropertySelect').value;
+  const siteUrl=document.getElementById('gscSiteSelect').value;
+  if(!propertyId&&!siteUrl){alert('Selecciona al menos una propiedad de GA4 o un sitio de Search Console.');return}
+  state.dataSourceName=googleSourceName(propertyId,siteUrl);
+  readSettings();
+  const dateFrom=state.settings.dateFrom||(()=>{const d=new Date();d.setDate(d.getDate()-30);return d.toISOString().slice(0,10)})();
+  const dateTo=state.settings.dateTo||new Date().toISOString().slice(0,10);
+  const reportStart=parseReportDateToken(dateFrom),reportEnd=parseReportDateToken(dateTo);
+  setTop('Consultando Google Analytics / Search Console...');
+  banner('warn','Consultando datos en vivo desde Google...');
+  try{
+    state.datasets=[];
+    if(propertyId){
+      const [traffic,userChannel,dayHour,sessionsQuality,usersDaily,totalsAgg,userSource,pages,device,os,model,browser,screen,gender,country,region,city]=await Promise.all([
+        runGA4Report(propertyId,['date','sessionDefaultChannelGroup'],['sessions','totalUsers','bounceRate'],dateFrom,dateTo),
+        runGA4Report(propertyId,['date','firstUserDefaultChannelGroup'],['totalUsers','newUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['date','dayOfWeek','hour'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['date'],['sessions','bounceRate'],dateFrom,dateTo),
+        runGA4Report(propertyId,['date'],['totalUsers','newUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,[],['totalUsers','newUsers','activeUsers','userEngagementDuration','eventCount'],dateFrom,dateTo),
+        runGA4Report(propertyId,['firstUserSourceMedium'],['totalUsers','newUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['pagePathPlusQueryString'],['screenPageViews','totalUsers','bounceRate'],dateFrom,dateTo),
+        runGA4Report(propertyId,['deviceCategory'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['operatingSystem'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['mobileDeviceModel'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['browser'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['screenResolution'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['userGender'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['country'],['totalUsers','bounceRate'],dateFrom,dateTo),
+        runGA4Report(propertyId,['country','region'],['totalUsers'],dateFrom,dateTo),
+        runGA4Report(propertyId,['country','city'],['totalUsers'],dateFrom,dateTo)
+      ]);
+      state.datasets.push(
+        ga4ResponseToDataset('GA4 · Tráfico por canal (API)','trafico',['Fecha','Grupo de canales principal de la sesión'],['Sesiones','Usuarios totales','Porcentaje de rebote'],traffic,reportStart,reportEnd,'Fecha'),
+        ga4ResponseToDataset('GA4 · Usuarios por canal (API)','usuarios',['Fecha','Primer grupo de canales principal del usuario'],['Usuarios totales','Usuarios nuevos'],userChannel,reportStart,reportEnd,'Fecha'),
+        ga4ResponseToDataset('GA4 · Usuarios por día y hora (API)','usuarios',['Fecha','Día de la semana','Hora'],['Usuarios totales'],dayHour,reportStart,reportEnd,'Fecha'),
+        ga4ResponseToDataset('GA4 · Sesiones y rebote por día (API)','trafico',['Fecha'],['Sesiones','Porcentaje de rebote'],sessionsQuality,reportStart,reportEnd,'Fecha'),
+        ga4ResponseToDataset('GA4 · Usuarios por día (API)','usuarios',['Fecha'],['Usuarios totales','Usuarios nuevos'],usersDaily,reportStart,reportEnd,'Fecha'),
+        ga4ResponseToDataset('GA4 · Totales del período (API)','usuarios',[],['Usuarios totales','Usuarios nuevos','Usuarios activos','Tiempo de interacción total','Número de eventos'],totalsAgg,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Usuarios por fuente (API)','usuarios',['Fuente del primer usuario / medio'],['Usuarios totales','Usuarios nuevos'],userSource,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Páginas (API)','paginas',['Ruta de página y clase de pantalla'],['Vistas','Usuarios totales','Porcentaje de rebote'],pages,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Dispositivo (API)','tecnologia',['Categoría de dispositivo'],['Usuarios totales'],device,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Sistema operativo (API)','tecnologia',['Sistema operativo'],['Usuarios totales'],os,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Modelo de dispositivo (API)','tecnologia',['Modelo del dispositivo móvil'],['Usuarios totales'],model,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Navegador (API)','tecnologia',['Navegador'],['Usuarios totales'],browser,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Formato de pantalla (API)','tecnologia',['Formato de pantalla'],['Usuarios totales'],screen,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Sexo (API)','demografia',['Sexo'],['Usuarios totales'],gender,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · País (API)','demografia',['País'],['Usuarios totales','Porcentaje de rebote'],country,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Región (API)','demografia',['País','Región'],['Usuarios totales'],region,reportStart,reportEnd),
+        ga4ResponseToDataset('GA4 · Ciudad (API)','demografia',['País','Ciudad'],['Usuarios totales'],city,reportStart,reportEnd)
+      );
+    }
+    if(siteUrl){const gsc=await runGSCReport(siteUrl,dateFrom,dateTo);state.datasets.push(gscResponseToDataset(gsc,reportStart,reportEnd))}
+    state.model=buildModel();
+    renderAll(state.model);
+    document.getElementById('exportBtn').disabled=selectedExportIds().length===0;
+    setTop(`${state.datasets.length} reportes obtenidos de Google · ${state.model.warnings.length} advertencia(s)`);
+    banner(state.model.warnings.length?'warn':'ok',state.model.warnings.length?`Datos de Google procesados con ${state.model.warnings.length} advertencia(s). El módulo Audiencias no se completa por esta vía.`:'Datos de Google procesados correctamente. El módulo Audiencias no se completa por esta vía.');
+  }catch(err){
+    console.error(err);
+    setTop('Error al consultar Google');
+    banner('bad','No fue posible obtener los datos de Google: '+esc(err.message||'error desconocido'));
+  }
+}
+/* ===== FIN INTEGRACIÓN GOOGLE (BETA) ===== */
+
+function resetAll(){state.files=[];state.datasets=[];state.filteredDatasets=[];state.model=null;state.dataSourceName='';document.getElementById('csvInput').value='';document.getElementById('processBtn').disabled=true;document.getElementById('exportBtn').disabled=true;setTop('Sin datos cargados');banner('warn','Sin datos cargados. Selecciona los CSV y presiona Procesar.');['kpis','userKpis','organicKpis','ga4Snapshot'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="empty">Sin datos.</div>'});['channelDonut','channelBars','userComposition','sourceBars','audienceBars','audienceDonut','pageBars','pageDonut','deviceDonut','osDonut','deviceDetailBars','browserBars','screenBars','queryBars','queryScatter','genderDonut','regionBars','regionDonut','countryDonut','countryBars','cityBars','trafficTrend','userChannelTrend','userDayHourHeatmap','userDayBars','userHourBars','sessionsTrend','bounceTrend','userBreakdownTrend'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="empty">Sin datos.</div>'});['trafficTrendFrom','trafficTrendTo','userChannelTrendFrom','userChannelTrendTo','userDayHourFrom','userDayHourTo','sessionsTrendFrom','sessionsTrendTo','bounceTrendFrom','bounceTrendTo','userBreakdownTrendFrom','userBreakdownTrendTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});['regionCountrySelect','cityCountrySelect'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<option value="">Todos los países</option>'});const dhn=document.getElementById('userDayHourNote');if(dhn)dhn.innerHTML='Sin datos.';['channelTable','sourceTable','audienceTable','pageTable','queryTable'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<table><tbody><tr><td>Sin datos.</td></tr></tbody></table>'});['summaryChannel','summaryTech','summaryLocation','validation','fileCards'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div class="empty">Sin datos.</div>'});['userVarianceNote','pageDataNote'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='Sin datos.'});updateExportSelection();restoreAllModules();setActiveNav('carga')}
+
+function googleSourceName(propertyId,siteUrl){
+  const propLabel=googleState.ga4Properties.find(p=>p.id===propertyId)?.label||'';
+  const accountName=propLabel?propLabel.split('·')[0].trim():'';
+  if(accountName)return accountName;
+  const gscName=siteUrl?siteUrl.replace(/^sc-domain:/i,'').replace(/^https?:\/\//i,'').replace(/\/$/,''):'';
+  return gscName||'GoogleAnalytics';
+}
+function sanitizeForFilename(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w.+-]+/g,'_').replace(/_+/g,'_').replace(/^_|_$/g,'')}
+function detectDataSourceLabel(){return sanitizeForFilename(state.dataSourceName)||'SinFuente'}
+function exportProcessedHTML(){
+  if(!state.model){alert('Procesa los CSV primero.');return}
+  const ids=selectedExportIds();
+  if(!ids.length){alert('Selecciona al menos un módulo para exportar.');return}
+  const style=document.querySelector('style').textContent;
+  const sections=ids.map(id=>{
+    const el=document.getElementById(id);if(!el)return '';
+    const clone=el.cloneNode(true);
+    clone.querySelectorAll('.module-select,.selectionbar,.exportPanel').forEach(x=>x.remove());
+    clone.querySelectorAll('.export-card.export-off').forEach(x=>x.remove());
+    clone.querySelectorAll('.card-export-check').forEach(x=>x.remove());
+    clone.querySelectorAll('details.accordion').forEach(d=>d.open=true);
+    return clone.outerHTML;
+  }).join('\n');
+  const navLinks=ids.map(id=>{
+    const section=document.getElementById(id);
+    const moduleTitle=section?.querySelector('.module-title')?.textContent?.trim();
+    const fallback=EXPORT_MODULES.find(m=>m.id===id)?.label||id;
+    return `<a href="#${esc(id)}">${esc(moduleTitle||fallback)}</a>`;
+  }).join('');
+  const labels=ids.map(id=>EXPORT_MODULES.find(m=>m.id===id)?.label||id);
+  const trendEngineFns=[norm,esc,fmt,pct,parseNum,hasMetricValue,isTotalRow,cleanRows,bestCol,findRowDateCol,parseReportDateToken,dateISO,dateLabel,metricTotal,chartTooltip,renderBarChart,renderDonutChart,extractDailySeries,extractMetricSeries,extractUserBreakdownSeries,fullDateRangeOfDatasets,renderTrendChart,extractDayHourBalance,renderDayHourHeatmap,renderUserDayHourBalance,renderTrafficTrend,renderUserChannelTrend,renderUserDayHourBalanceChart,renderSessionsTrend,renderBounceTrend,renderUserBreakdownTrend,readTrendRange,applyTrendRange,useFullTrendRange,toggleTrendChannel,findDemografiaPrimary,populateCountrySelect,filterByCountryAndGroup,renderRegionFiltered,renderCityFiltered];
+  const trendEngineSrc=trendEngineFns.map(f=>f.toString()).join('\n');
+  const trendDatasets=JSON.stringify(state.datasets.filter(d=>d.type==='trafico'||d.type==='usuarios'||d.type==='demografia'));
+  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Resultado Dashboard Técnico Grupo TERRA</title><style>${style}</style></head><body class="exported"><div class="shell"><header class="top"><button id="mobileMenuBtn" class="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menú de navegación">☰</button><div class="brand"><div class="logo">🌾</div><div><b>Grupo TERRA</b><span>Informe técnico exportado · V15</span></div></div><div class="topmid"><span class="pill">● Informe procesado</span><span class="topstatus">Navega por los módulos incluidos</span></div></header><aside id="sidebar" class="side" aria-label="Módulos exportados"><div class="mobile-side-head"><div class="mobile-side-title"><span>🌾</span><span>Menú del informe<small>Módulos exportados</small></span></div><button id="mobileMenuClose" class="menu-close" type="button" aria-label="Cerrar menú">✕</button></div><nav class="nav"><div class="navlabel">Módulos exportados</div>${navLinks}</nav><div class="export-nav-note">El menú contiene únicamente los módulos seleccionados al generar este informe.</div></aside><div id="mobileMenuOverlay" class="mobile-overlay" aria-hidden="true"></div><main class="content"><section class="hero"><div class="eyebrow">🌾 Resultado procesado · Dashboard Técnico Web V15</div><h1>Informe de <span>analítica web técnica</span></h1><p>Generado el ${new Date().toLocaleString('es-EC')}. ${esc(labels.join(', '))}.</p><div class="statusBanner ok"><span>✅</span><span>El informe conserva gráficas, tablas, escalas, diagnósticos y navegación entre los módulos seleccionados.</span></div><div class="selectionbar" style="margin-top:14px"><button class="btn" type="button" onclick="toggleAllAccordions(true)">Expandir módulos</button><button class="btn" type="button" onclick="toggleAllAccordions(false)">Contraer módulos</button></div></section>${sections}</main></div><div id="tooltip" class="floating" role="tooltip" aria-hidden="true"></div><script>(${tooltipRuntime.toString()})();(${exportNavigationRuntime.toString()})();${toggleAllAccordions.toString()}
+const CHART_COLORS=${JSON.stringify(CHART_COLORS)};const synonyms=${JSON.stringify(synonyms)};const DAY_NAMES=${JSON.stringify(DAY_NAMES)};const DAY_NAMES_SHORT=${JSON.stringify(DAY_NAMES_SHORT)};const DAY_DISPLAY_ORDER=${JSON.stringify(DAY_DISPLAY_ORDER)};const trendHidden={};${trendEngineSrc}\nconst TREND_CHARTS={trafficTrend:{type:'trafico',render:renderTrafficTrend},userChannelTrend:{type:'usuarios',render:renderUserChannelTrend},userDayHour:{type:'usuarios',render:renderUserDayHourBalanceChart},sessionsTrend:{type:'trafico',render:renderSessionsTrend},bounceTrend:{type:'trafico',render:renderBounceTrend},userBreakdownTrend:{type:'usuarios',render:renderUserBreakdownTrend}};const state={datasets:${trendDatasets}};if(document.getElementById('regionCountrySelect'))populateCountrySelect('regionCountrySelect',findDemografiaPrimary('region'),'Ecuador');if(document.getElementById('cityCountrySelect'))populateCountrySelect('cityCountrySelect',findDemografiaPrimary('city'),'Ecuador');<\/script></body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'}),a=document.createElement('a'),stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-'),sourceLabel=detectDataSourceLabel();
+  a.href=URL.createObjectURL(blob);a.download=`resultado_datos_técnicos_Grupo_TERRA_(${sourceLabel})(${stamp}).html`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)
+}
+function tooltipRuntime(){const box=document.getElementById('tooltip');let active=null;if(!box)return;function show(el,e){const t=el.getAttribute('data-tip');if(!t)return;active=el;box.textContent=t;box.classList.add('show');pos(e)}function hide(){active=null;box.classList.remove('show')}function pos(e){if(!active)return;const margin=14,gap=16,vw=innerWidth,vh=innerHeight,r=box.getBoundingClientRect();let x=e.clientX+gap,y=e.clientY-r.height-gap;if(x+r.width>vw-margin)x=vw-r.width-margin;if(x<margin)x=margin;if(y<margin)y=e.clientY+gap;if(y+r.height>vh-margin)y=vh-r.height-margin;box.style.left=x+'px';box.style.top=y+'px'}document.addEventListener('mouseover',e=>{const el=e.target.closest('.tip,.tiplink');if(el)show(el,e)});document.addEventListener('mousemove',e=>{if(active)pos(e)});document.addEventListener('mouseout',e=>{const el=e.target.closest('.tip,.tiplink');if(el&&!el.contains(e.relatedTarget))hide()});addEventListener('scroll',hide,true);addEventListener('resize',hide)}
+
+function exportNavigationRuntime(){
+  const body=document.body,sidebar=document.getElementById('sidebar'),menuBtn=document.getElementById('mobileMenuBtn'),closeBtn=document.getElementById('mobileMenuClose'),overlay=document.getElementById('mobileMenuOverlay');
+  const links=[...document.querySelectorAll('.nav a[href^="#"]')];
+  function isMobile(){return window.matchMedia('(max-width:900px)').matches}
+  function setMobileMenu(open){
+    const active=!!open&&isMobile();
+    body.classList.toggle('menu-open',active);
+    sidebar?.classList.toggle('open',active);
+    overlay?.classList.toggle('show',active);
+    overlay?.setAttribute('aria-hidden',active?'false':'true');
+    menuBtn?.setAttribute('aria-expanded',active?'true':'false');
+    menuBtn?.setAttribute('aria-label',active?'Cerrar menú de navegación':'Abrir menú de navegación');
+  }
+  function setActive(id){
+    links.forEach(link=>{
+      const active=link.getAttribute('href')===`#${id}`;
+      link.classList.toggle('active',active);
+      if(active)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');
+    });
+  }
+  function syncActive(){
+    if(!links.length)return;
+    const offset=isMobile()?132:86;
+    let chosen=links[0];
+    for(const link of links){
+      const id=link.getAttribute('href').slice(1),section=document.getElementById(id);
+      if(!section)continue;
+      const rect=section.getBoundingClientRect();
+      if(rect.top<=offset+18)chosen=link;
+      if(rect.top>offset+18)break;
+    }
+    setActive(chosen.getAttribute('href').slice(1));
+  }
+  let ticking=false;
+  function scheduleSync(){if(ticking)return;ticking=true;requestAnimationFrame(()=>{ticking=false;syncActive()})}
+  menuBtn?.addEventListener('click',()=>setMobileMenu(!sidebar?.classList.contains('open')));
+  closeBtn?.addEventListener('click',()=>setMobileMenu(false));
+  overlay?.addEventListener('click',()=>setMobileMenu(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')setMobileMenu(false)});
+  links.forEach(link=>link.addEventListener('click',()=>{
+    const id=link.getAttribute('href').slice(1),section=document.getElementById(id);
+    section?.querySelector('details.accordion')?.setAttribute('open','');
+    setActive(id);
+    if(isMobile())setMobileMenu(false);
+    setTimeout(scheduleSync,350);
+  }));
+  window.addEventListener('scroll',scheduleSync,{passive:true});
+  window.addEventListener('resize',()=>{if(!isMobile())setMobileMenu(false);scheduleSync()});
+  document.querySelectorAll('details.accordion').forEach(d=>d.addEventListener('toggle',scheduleSync));
+  if(links.length)setActive(links[0].getAttribute('href').slice(1));
+  scheduleSync();
+}
+
+
+(function(){
+  tooltipRuntime();
+  initExportChecks();
+  initCardExportChecks();
+  const body=document.body;
+  const sidebar=document.getElementById('sidebar');
+  const menuBtn=document.getElementById('mobileMenuBtn');
+  const closeBtn=document.getElementById('mobileMenuClose');
+  const overlay=document.getElementById('mobileMenuOverlay');
+  function isMobile(){return window.matchMedia('(max-width:900px)').matches}
+  function setMobileMenu(open){
+    const active=!!open&&isMobile();
+    body.classList.toggle('menu-open',active);
+    sidebar?.classList.toggle('open',active);
+    overlay?.classList.toggle('show',active);
+    overlay?.setAttribute('aria-hidden',active?'false':'true');
+    menuBtn?.setAttribute('aria-expanded',active?'true':'false');
+    menuBtn?.setAttribute('aria-label',active?'Cerrar menú de navegación':'Abrir menú de navegación');
+    if(active)closeBtn?.focus();
+  }
+  menuBtn?.addEventListener('click',()=>setMobileMenu(!sidebar?.classList.contains('open')));
+  closeBtn?.addEventListener('click',()=>{setMobileMenu(false);menuBtn?.focus()});
+  overlay?.addEventListener('click',()=>setMobileMenu(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&sidebar?.classList.contains('open')){setMobileMenu(false);menuBtn?.focus()}});
+  window.addEventListener('resize',()=>{if(!isMobile())setMobileMenu(false);scheduleActiveNavSync()});
+  window.addEventListener('scroll',scheduleActiveNavSync,{passive:true});
+  document.querySelectorAll('details.accordion').forEach(d=>d.addEventListener('toggle',scheduleActiveNavSync));
+  document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{
+    if(a.hidden)return;
+    const id=a.getAttribute('href')?.slice(1),sec=id?document.getElementById(id):null;
+    setActiveNav(id);
+    sec?.querySelector('details.accordion')?.setAttribute('open','');
+    if(isMobile())setMobileMenu(false);
+    setTimeout(scheduleActiveNavSync,380);
+  }));
+  setActiveNav('carga');
+  scheduleActiveNavSync();
+})();
+</script>
+</body>
+</html>
