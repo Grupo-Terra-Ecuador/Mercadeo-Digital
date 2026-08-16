@@ -105,6 +105,7 @@
       <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="trafficTrend">Usar rango completo</button>
     </div>
     <div id="trafficTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+<div id="aiInsight-resumen"></div>
 </div></details></section>
 
 <section id="trafico" class="section"><details class="accordion" open><summary><span class="module-title">Adquisicion de trafico web por canales</span><span class="chevron">v</span></summary><div class="module-body">
@@ -128,6 +129,7 @@
     <div id="bounceTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
   <details class="detail-accordion"><summary>Detalle tecnico por canal <span class="chevron-mini">v</span></summary><div class="detail-body"><div id="channelTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
 <details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="channelNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-trafico"></div>
 </div></details></section>
 
 <section id="usuarios" class="section"><details class="accordion" open><summary><span class="module-title">Adquisicion de usuarios y fuentes de trafico</span><span class="chevron">v</span></summary><div class="module-body">
@@ -166,6 +168,7 @@
   </div>
   <details class="detail-accordion"><summary>Fuente / medio de adquisicion <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se prioriza Fuente/medio del primer usuario; como respaldo se usa Fuente/medio de la sesion.</div><div id="sourceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
   <details class="ai-accordion" open><summary>Diagnostico de diferencias entre usuarios <span class="chevron-mini">v</span></summary><div id="userVarianceNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-usuarios"></div>
 </div></details></section>
 
 <section id="audiencias" class="section"><details class="accordion"><summary><span class="module-title">Audiencias</span><span class="chevron">v</span></summary><div class="module-body">
@@ -175,6 +178,7 @@
   </div>
   <details class="detail-accordion"><summary>Detalle por audiencia <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se prioriza el informe de Audiencias con Nombre de la audiencia, Total de usuarios, Usuarios nuevos y Sesiones.</div><div id="audienceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
 <details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="audienceNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-audiencias"></div>
 </div></details></section>
 
 <section id="paginas" class="section"><details class="accordion"><summary><span class="module-title">Paginas mas visitadas</span><span class="chevron">v</span></summary><div class="module-body">
@@ -184,6 +188,7 @@
   </div>
   <details class="detail-accordion"><summary>Detalle de paginas <span class="chevron-mini">v</span></summary><div class="detail-body"><div id="pageTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
   <details class="ai-accordion" open><summary>Diagnostico de campos sin informacion <span class="chevron-mini">v</span></summary><div id="pageDataNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-paginas"></div>
 </div></details></section>
 
 <section id="tecnologia" class="section"><details class="accordion"><summary><span class="module-title">Tecnologia, dispositivos y navegadores</span><span class="chevron">v</span></summary><div class="module-body">
@@ -195,6 +200,7 @@
     <div class="chart-card"><div class="chart-head"><div><h3>Formato de pantalla</h3><p>Resoluciones de pantalla mas usadas por tus visitantes.</p></div><span class="tip" data-tip="GA4 llama a esto 'Resolucion de pantalla' (ej. 1920x1080, 390x844)."><span class="tipi">i</span></span></div><div id="screenBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
   </div>
 <details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="techNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-tecnologia"></div>
 </div></details></section>
 
 <section id="organico" class="section"><details class="accordion"><summary><span class="module-title">Consultas de busqueda organica</span><span class="chevron">v</span></summary><div class="module-body">
@@ -204,6 +210,7 @@
     <div class="chart-card"><div class="chart-head"><div><h3>CTR por consulta y posicion media</h3><p>Ordenadas de mayor a menor CTR.</p></div><span class="tip" data-tip="Las consultas se ordenan de mayor a menor CTR."><span class="tipi">i</span></span></div><div id="queryScatter"><div class="empty chart-empty">Sin datos.</div></div></div>
   </div>
   <details class="detail-accordion"><summary>Consultas organicas <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se muestran hasta 100 consultas en la tabla para conservar legibilidad; las metricas generales se calculan con todo el informe.</div><div id="queryTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+<div id="aiInsight-organico"></div>
 </div></details></section>
 
 <section id="demografia" class="section"><details class="accordion"><summary><span class="module-title">Demografia</span><span class="chevron">v</span></summary><div class="module-body">
@@ -215,6 +222,7 @@
     <div class="chart-card"><div class="chart-head"><div><h3>Ciudad</h3><p>Ciudades ordenadas por usuarios; se muestran todos los registros disponibles.</p></div><span class="tip" data-tip="Escala relativa a la ciudad de mayor volumen."><span class="tipi">i</span></span></div><div class="trend-controls" style="margin-bottom:10px"><div class="field"><label>Pais</label><select id="cityCountrySelect"><option value="">Todos los paises</option></select></div></div><div id="cityBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
   </div>
   <details class="ai-accordion" open><summary>Lectura descriptiva <span class="chevron-mini">v</span></summary><div id="demoNote" class="ai-body">Sin datos.</div></details>
+<div id="aiInsight-demografia"></div>
 </div></details></section>
 
 <section id="validacion" class="section"><details class="accordion"><summary><span class="module-title">Validacion tecnica</span><span class="chevron">v</span></summary><div class="module-body"><div id="validation"><div class="empty">Sin archivos cargados.</div></div></div></details></section>

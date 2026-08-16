@@ -31,6 +31,26 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'legacy/'],
+    // El Worker (worker/) corre en el runtime de Cloudflare Workers, no en el navegador:
+    // tiene sus propios globals (Response, Request, fetch nativo sin polyfill, etc.).
+    files: ['worker/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: {
+        fetch: 'readonly',
+        console: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        URL: 'readonly',
+        Headers: 'readonly',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    ignores: ['dist/', 'node_modules/', 'legacy/', 'worker/.wrangler/', 'worker/node_modules/'],
   },
 ];

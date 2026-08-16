@@ -21,6 +21,7 @@ import { initNav, setActiveNav, scheduleActiveNavSync } from './ui/nav.js';
 import { initExportChecks, initCardExportChecks, selectedExportIds, setAllExportSections, toggleAllAccordions, updateExportSelection } from './ui/export-selection.js';
 import { setModuleAvailability, restoreAllModules } from './ui/module-availability.js';
 import { safe } from './ui/render-helpers.js';
+import { renderAllAiInsightBlocks, handleGenerateAiInsight } from './ui/ai-insight.js';
 
 import { renderSummary, renderTrafficTrend } from './sections/resumen.js';
 import { renderTraffic, renderSessionsTrend, renderBounceTrend } from './sections/trafico.js';
@@ -95,6 +96,7 @@ function renderAll(m) {
   renderDateStatus(m);
   setModuleAvailability(m);
   updateExportSelection();
+  renderAllAiInsightBlocks();
 }
 
 function pickFiles() {
@@ -288,6 +290,7 @@ function resetAll() {
   });
   updateExportSelection();
   restoreAllModules();
+  renderAllAiInsightBlocks();
   setActiveNav('carga');
 }
 
@@ -309,6 +312,7 @@ const ACTIONS = {
   collapseModules: () => toggleAllAccordions(false),
   applyTrendRange: (el) => applyTrendRange(el.dataset.trendTarget),
   useFullTrendRange: (el) => useFullTrendRange(el.dataset.trendTarget),
+  generateAiInsight: (el) => handleGenerateAiInsight(el),
 };
 
 function initActionDelegation() {
@@ -358,6 +362,7 @@ function init() {
   initDemographyFilters();
   initNav();
   scheduleActiveNavSync();
+  renderAllAiInsightBlocks();
 }
 
 document.addEventListener('DOMContentLoaded', init);
