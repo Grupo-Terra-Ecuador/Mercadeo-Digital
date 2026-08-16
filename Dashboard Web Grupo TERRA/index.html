@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Grupo TERRA - Dashboard Tecnico Web V15 - Datos automatizados GA4 y Search Console</title>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <button id="mobileMenuBtn" class="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Abrir menu de navegacion">&#9776;</button>
+  <div class="brand"><div class="logo">&#127807;</div><div><b>Grupo TERRA</b><span>Dashboard Tecnico Web V15 - Datos automatizados GA4 y Search Console</span></div></div>
+  <div class="topmid"><span class="pill">Analitica tecnica</span><span id="topStatus" class="topstatus">Sin datos cargados</span></div>
+  <div class="topright">
+    <button class="btn" type="button" data-action="pickFiles">Cargar CSV</button>
+    <span class="tip" data-tip="Selecciona uno o varios CSV de GA4 o Search Console. El sistema detecta separador, encabezados desplazados, columnas, periodo del reporte y calidad de lectura automaticamente."><span class="tipi">i</span></span>
+    <button id="processBtn" class="btn accent" type="button" data-action="processDashboard" disabled>Procesar</button>
+    <button id="exportBtn" class="btn" type="button" data-action="exportProcessedHTML" disabled>Exportar HTML</button>
+    <button class="btn" type="button" data-action="resetAll">Reiniciar</button>
+    <input id="csvInput" type="file" accept=".csv,text/csv" multiple hidden>
+  </div>
+</header>
+<aside id="sidebar" class="side" aria-label="Navegacion principal">
+  <div class="mobile-side-head">
+    <div class="mobile-side-title"><span>&#127807;</span><span>Menu del dashboard<small>Navegacion por modulos</small></span></div>
+    <button id="mobileMenuClose" class="menu-close" type="button" aria-label="Cerrar menu">&#10005;</button>
+  </div>
+  <nav class="nav">
+    <div class="navlabel">Carga</div>
+    <a href="#carga">Archivos</a>
+    <a href="#resumen">Resumen</a>
+    <div class="navlabel">Analitica</div>
+    <a href="#trafico">Trafico por canales</a>
+    <a href="#usuarios">Usuarios y fuentes</a>
+    <a href="#audiencias">Audiencias</a>
+    <a href="#paginas">Paginas</a>
+    <a href="#tecnologia">Tecnologia</a>
+    <a href="#organico">Busqueda organica</a>
+    <a href="#demografia">Demografia</a>
+    <div class="navlabel">Control</div>
+    <a href="#validacion">Validacion</a>
+    <a href="#fuentes-dashboard">Reportes procesados</a>
+  </nav>
+</aside>
+<div id="mobileMenuOverlay" class="mobile-overlay" aria-hidden="true"></div>
+<main class="content">
+<section id="carga" class="hero">
+  <div class="eyebrow">Version 15 - Datos automatizados GA4 y Search Console - navegacion activa - modulos dinamicos segun datos</div>
+  <h1>Dashboard de <span>analitica web tecnica</span></h1>
+  <p>Visualiza unicamente adquisicion, usuarios, audiencias, fuentes, paginas, dispositivos, navegadores, rebote, consultas organicas y demografia. Se eliminaron embudos, leads, estimaciones comerciales, ecommerce, marcas y diagnosticos de ventas.</p>
+  <div id="statusBanner" class="statusBanner warn"><span>!</span><span>Sin datos cargados. Selecciona los CSV y presiona Procesar.</span></div>
+  <div class="scope"><b>Alcance tecnico:</b> adquisicion de trafico por canales; usuarios totales, nuevos y recurrentes; audiencias; fuente/medio; paginas mas visitadas; dispositivo; navegador; tasa de rebote; consultas de busqueda organica; sexo, provincia/region, pais y ciudad.</div>
+</section>
+
+<section class="section settingsPanel">
+  <div class="card" id="googleConnectCard">
+    <div class="cardtitle">Conectar con Google Analytics y Search Console (beta)</div>
+    <div class="cardsub">Alternativa a subir CSV manualmente: trae los datos directamente desde tu cuenta de Google. Requiere que este archivo este servido desde un origen web (no funciona abriendolo con doble clic) y que el Client ID de Google Cloud este configurado (variable VITE_GOOGLE_CLIENT_ID). La audiencia (modulo "Audiencias") no esta disponible aun por esta via; usa un CSV para ese modulo si lo necesitas.</div>
+    <div class="selectionbar">
+      <button id="googleConnectBtn" class="btn accent" type="button" data-action="connectGoogle">Conectar con Google</button>
+      <button id="googleDisconnectBtn" class="btn" type="button" data-action="disconnectGoogle" hidden>Desconectar</button>
+    </div>
+    <div id="googleStatus" class="export-status">No conectado. Los datos seguiran viniendo de los CSV mientras no conectes una cuenta.</div>
+    <div id="googlePickers" class="settings" style="margin-top:12px" hidden>
+      <div class="field"><label>Propiedad de GA4</label><select id="ga4PropertySelect"></select></div>
+      <div class="field"><label>Sitio de Search Console</label><select id="gscSiteSelect"></select></div>
+      <div class="field"><label>&nbsp;</label><button class="btn accent" type="button" data-action="processFromGoogle">Traer datos de Google</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cardtitle">Filtro de fechas responsable</div>
+    <div class="settings">
+      <div class="field"><label>Desde</label><input id="dateFrom" type="date"></div>
+      <div class="field"><label>Hasta</label><input id="dateTo" type="date"></div>
+      <div class="field"><label>Aplicar</label><button class="btn accent" type="button" data-action="applyDateFilter">Aplicar filtro</button></div>
+      <div class="field"><label>Rango CSV</label><button class="btn" type="button" data-action="fillDetectedDateRange">Usar rango detectado</button></div>
+    </div>
+    <div id="dateFilterStatus" class="ai" style="margin-top:12px"><b>Nota:</b> si un CSV esta agregado para todo un periodo y no incluye una columna Fecha, no es posible recortarlo por dia sin alterar la veracidad del dato. En ese caso se conserva el total agregado (modo seguro).</div>
+  </div>
+  <div class="card exportPanel">
+    <div class="cardtitle">Configuracion del informe HTML</div>
+    <div class="cardsub">Marca o desmarca "Incluir en HTML" en el encabezado de cada modulo. Las graficas, tablas y comentarios seleccionados se conservaran en el informe.</div>
+    <div class="selectionbar">
+      <button class="btn" type="button" data-action="setAllExportSectionsOn">Seleccionar todo</button>
+      <button class="btn" type="button" data-action="setAllExportSectionsOff">Limpiar seleccion</button>
+      <button class="btn" type="button" data-action="expandModules">Expandir modulos</button>
+      <button class="btn" type="button" data-action="collapseModules">Contraer modulos</button>
+    </div>
+    <div id="exportSelectionStatus" class="export-status">7 modulos de analitica seleccionados.</div>
+  </div>
+</section>
+
+<section id="resumen" class="section"><details class="accordion" open><summary><span class="module-title">Resumen tecnico</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="card" style="margin-bottom:12px"><div class="cardtitle">Vista rapida GA4<span class="tip" data-tip="Los mismos 4 indicadores que ves en la pantalla de inicio de tu cuenta de Google Analytics, para el mismo periodo que tengas seleccionado aqui. 'Usuarios activos' no es lo mismo que 'Usuarios totales' de la tarjeta de abajo: activos son quienes tuvieron una sesion con interaccion real o al menos un evento; totales incluye tambien a quienes entraron y no interactuaron. Disponible solo al conectar con Google." style="margin-left:8px"><span class="tipi">i</span></span></div><div id="ga4Snapshot" class="ga4-snapshot-row"><div class="empty">Conecta con Google para ver esta vista.</div></div></div>
+  <div id="kpis" class="grid5"><div class="empty">Sin datos.</div></div>
+  <div class="grid3" style="margin-top:12px">
+    <div id="summaryChannel" class="kpi summary-insight blue"><div class="empty">Sin datos.</div></div>
+    <div id="summaryTech" class="kpi summary-insight purple"><div class="empty">Sin datos.</div></div>
+    <div id="summaryLocation" class="kpi summary-insight green"><div class="empty">Sin datos.</div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Trafico adquirido a lo largo del tiempo</h3><p>Rango propio de esta grafica, independiente del Filtro de fechas responsable.</p></div><span class="tip" data-tip="Requiere desglose diario: disponible automaticamente al conectar Google, o si el CSV cargado incluye la columna Fecha. Define aqui el rango que quieres ver; no afecta al resto del dashboard. Pase el cursor sobre la grafica para ver el detalle de cada dia."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="trafficTrendFrom" type="date" data-action="applyTrendRange" data-trend-target="trafficTrend"></div>
+      <div class="field"><label>Hasta</label><input id="trafficTrendTo" type="date" data-action="applyTrendRange" data-trend-target="trafficTrend"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="trafficTrend">Usar rango completo</button>
+    </div>
+    <div id="trafficTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+</div></details></section>
+
+<section id="trafico" class="section"><details class="accordion" open><summary><span class="module-title">Adquisicion de trafico web por canales</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Participacion por canal</h3><p>Grafico circular sobre sesiones o usuarios clasificados.</p></div><span class="tip" data-tip="Escala: cada segmento representa su porcentaje del total de sesiones o usuarios clasificados. Pase el cursor por la leyenda para ver valor y participacion."><span class="tipi">i</span></span></div><div id="channelDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Escala comparativa por canal</h3><p>La barra mas larga representa el canal con mayor volumen.</p></div><span class="tip" data-tip="Escala relativa: 100% de ancho corresponde al mayor valor del grafico. Las demas barras se calculan proporcionalmente. El valor exacto y su participacion aparecen a la derecha."><span class="tipi">i</span></span></div><div id="channelBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Sesiones a lo largo del tiempo</h3><p>Volumen de sesiones por dia (rango propio, independiente del resto del dashboard).</p></div><span class="tip" data-tip="Muestra solo el volumen (Sesiones). Para leer la calidad de esas sesiones, revisa la grafica 'Tasa de rebote a lo largo del tiempo' justo debajo: ambas juntas dan una lectura completa de cantidad y calidad sin duplicar informacion en una misma grafica."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="sessionsTrendFrom" type="date" data-action="applyTrendRange" data-trend-target="sessionsTrend"></div>
+      <div class="field"><label>Hasta</label><input id="sessionsTrendTo" type="date" data-action="applyTrendRange" data-trend-target="sessionsTrend"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="sessionsTrend">Usar rango completo</button>
+    </div>
+    <div id="sessionsTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Tasa de rebote a lo largo del tiempo</h3><p>Rango propio de esta grafica, independiente del resto del dashboard.</p></div><span class="tip" data-tip="Porcentaje de sesiones sin interaccion real. Una subida sostenida suele indicar un problema de contenido, velocidad o desajuste entre el anuncio/canal y la pagina de destino."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="bounceTrendFrom" type="date" data-action="applyTrendRange" data-trend-target="bounceTrend"></div>
+      <div class="field"><label>Hasta</label><input id="bounceTrendTo" type="date" data-action="applyTrendRange" data-trend-target="bounceTrend"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="bounceTrend">Usar rango completo</button>
+    </div>
+    <div id="bounceTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <details class="detail-accordion"><summary>Detalle tecnico por canal <span class="chevron-mini">v</span></summary><div class="detail-body"><div id="channelTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+<details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="channelNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="usuarios" class="section"><details class="accordion" open><summary><span class="module-title">Adquisicion de usuarios y fuentes de trafico</span><span class="chevron">v</span></summary><div class="module-body">
+  <div id="userKpis" class="grid4"><div class="empty">Sin datos.</div></div>
+  <div class="chart-grid" style="margin-top:12px">
+    <div class="chart-card"><div class="chart-head"><div><h3>Composicion de usuarios</h3><p>Distribucion entre nuevos y recurrentes.</p></div><span class="tip" data-tip="La composicion compara usuarios nuevos y recurrentes sobre la base total disponible. Los recurrentes pueden calcularse como Total menos Nuevos cuando GA4 no entrega la metrica directamente."><span class="tipi">i</span></span></div><div id="userComposition"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Principales fuentes / medios</h3><p>Volumen comparado cuando el CSV incluye esta dimension.</p></div><span class="tip" data-tip="La escala compara usuarios; si no existen usuarios por fuente, utiliza sesiones. La tabla conserva las metricas adicionales disponibles."><span class="tipi">i</span></span></div><div id="sourceBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Usuarios por canal a lo largo del tiempo</h3><p>Rango propio de esta grafica, independiente del Filtro de fechas responsable.</p></div><span class="tip" data-tip="Requiere desglose diario: disponible automaticamente al conectar Google, o si el CSV cargado incluye la columna Fecha."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userChannelTrendFrom" type="date" data-action="applyTrendRange" data-trend-target="userChannelTrend"></div>
+      <div class="field"><label>Hasta</label><input id="userChannelTrendTo" type="date" data-action="applyTrendRange" data-trend-target="userChannelTrend"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="userChannelTrend">Usar rango completo</button>
+    </div>
+    <div id="userChannelTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Usuarios: nuevos vs. recurrentes en el tiempo</h3><p>Rango propio de esta grafica, independiente del resto del dashboard.</p></div><span class="tip" data-tip="Usuarios recurrentes = Usuarios totales - Usuarios nuevos (estimado cuando GA4 no entrega el dato directo)."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userBreakdownTrendFrom" type="date" data-action="applyTrendRange" data-trend-target="userBreakdownTrend"></div>
+      <div class="field"><label>Hasta</label><input id="userBreakdownTrendTo" type="date" data-action="applyTrendRange" data-trend-target="userBreakdownTrend"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="userBreakdownTrend">Usar rango completo</button>
+    </div>
+    <div id="userBreakdownTrend"><div class="empty chart-empty">Sin datos.</div></div></div>
+  <div class="chart-card" style="margin-top:12px"><div class="chart-head"><div><h3>Balance por horas y dias de mayor trafico</h3><p>Rango propio de esta tarjeta, independiente de la grafica de arriba y del resto del dashboard.</p></div><span class="tip" data-tip="Requiere desglose por hora: disponible automaticamente al conectar con Google. Cada celda del mapa de calor muestra el detalle exacto al pasar el cursor."><span class="tipi">i</span></span></div>
+    <div class="trend-controls">
+      <div class="field"><label>Desde</label><input id="userDayHourFrom" type="date" data-action="applyTrendRange" data-trend-target="userDayHour"></div>
+      <div class="field"><label>Hasta</label><input id="userDayHourTo" type="date" data-action="applyTrendRange" data-trend-target="userDayHour"></div>
+      <button class="btn" type="button" data-action="useFullTrendRange" data-trend-target="userDayHour">Usar rango completo</button>
+    </div>
+    <div id="userDayHourHeatmap"><div class="empty chart-empty">Sin datos.</div></div>
+    <div class="heatmap-scale"><span>Menos trafico</span><span class="heatmap-scale-bar"></span><span>Mas trafico</span></div>
+    <div class="chart-grid" style="margin-top:16px">
+      <div><div class="cardtitle" style="font-size:12px">Por dia de la semana</div><div id="userDayBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+      <div><div class="cardtitle" style="font-size:12px">Por hora del dia</div><div id="userHourBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    </div>
+    <div id="userDayHourNote" class="ai" style="margin-top:14px">Sin datos.</div>
+  </div>
+  <details class="detail-accordion"><summary>Fuente / medio de adquisicion <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se prioriza Fuente/medio del primer usuario; como respaldo se usa Fuente/medio de la sesion.</div><div id="sourceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+  <details class="ai-accordion" open><summary>Diagnostico de diferencias entre usuarios <span class="chevron-mini">v</span></summary><div id="userVarianceNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="audiencias" class="section"><details class="accordion"><summary><span class="module-title">Audiencias</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Usuarios por audiencia</h3><p>Comparacion proporcional del volumen de cada audiencia o segmento.</p></div><span class="tip" data-tip="Escala relativa: la audiencia con mas usuarios ocupa el 100% del ancho."><span class="tipi">i</span></span></div><div id="audienceBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participacion por audiencia</h3><p>Las audiencias con menor volumen se agrupan como "Otros".</p></div><span class="tip" data-tip="El grafico circular muestra las audiencias principales."><span class="tipi">i</span></span></div><div id="audienceDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Detalle por audiencia <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se prioriza el informe de Audiencias con Nombre de la audiencia, Total de usuarios, Usuarios nuevos y Sesiones.</div><div id="audienceTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+<details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="audienceNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="paginas" class="section"><details class="accordion"><summary><span class="module-title">Paginas mas visitadas</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Top de paginas por vistas</h3><p>Comparacion proporcional del volumen de cada URL.</p></div><span class="tip" data-tip="Escala relativa: la pagina con mas vistas ocupa el 100% del ancho."><span class="tipi">i</span></span></div><div id="pageBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participacion de paginas principales</h3><p>Las paginas restantes se agrupan como "Otros".</p></div><span class="tip" data-tip="El grafico circular muestra las paginas principales."><span class="tipi">i</span></span></div><div id="pageDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Detalle de paginas <span class="chevron-mini">v</span></summary><div class="detail-body"><div id="pageTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+  <details class="ai-accordion" open><summary>Diagnostico de campos sin informacion <span class="chevron-mini">v</span></summary><div id="pageDataNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="tecnologia" class="section"><details class="accordion"><summary><span class="module-title">Tecnologia, dispositivos y navegadores</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Distribucion por dispositivo</h3><p>Movil, escritorio, tablet y categorias detectadas.</p></div><span class="tip" data-tip="Cada segmento representa el porcentaje de usuarios o sesiones por categoria de dispositivo."><span class="tipi">i</span></span></div><div id="deviceDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Sistema operativo</h3><p>Android, iOS, Windows, Macintosh, Linux y sistemas detectados.</p></div><span class="tip" data-tip="Cada segmento representa usuarios o sesiones por sistema operativo."><span class="tipi">i</span></span></div><div id="osDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Marca o modelo del dispositivo</h3><p>iPhone, Samsung, Redmi y otros equipos cuando el CSV incluye esa dimension.</p></div><span class="tip" data-tip="El dashboard prioriza Modelo del dispositivo movil y, como respaldo, Marca del dispositivo movil."><span class="tipi">i</span></span></div><div id="deviceDetailBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Navegadores</h3><p>Participacion y volumen de todos los navegadores disponibles.</p></div><span class="tip" data-tip="Escala relativa al navegador de mayor volumen."><span class="tipi">i</span></span></div><div id="browserBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Formato de pantalla</h3><p>Resoluciones de pantalla mas usadas por tus visitantes.</p></div><span class="tip" data-tip="GA4 llama a esto 'Resolucion de pantalla' (ej. 1920x1080, 390x844)."><span class="tipi">i</span></span></div><div id="screenBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+<details class="ai-accordion" open><summary>Lectura tecnica <span class="chevron-mini">v</span></summary><div id="techNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="organico" class="section"><details class="accordion"><summary><span class="module-title">Consultas de busqueda organica</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="grid4" id="organicKpis"><div class="empty">Sin datos.</div></div>
+  <div class="chart-grid" style="margin-top:12px">
+    <div class="chart-card"><div class="chart-head"><div><h3>Consultas con mayor volumen</h3><p>Palabras o frases que la gente escribio en Google y que mas veces trajeron visitas al sitio.</p></div><span class="tip" data-tip="Cada barra es una consulta de busqueda real."><span class="tipi">i</span></span></div><div id="queryBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>CTR por consulta y posicion media</h3><p>Ordenadas de mayor a menor CTR.</p></div><span class="tip" data-tip="Las consultas se ordenan de mayor a menor CTR."><span class="tipi">i</span></span></div><div id="queryScatter"><div class="empty chart-empty">Sin datos.</div></div></div>
+  </div>
+  <details class="detail-accordion"><summary>Consultas organicas <span class="chevron-mini">v</span></summary><div class="detail-body"><div class="cardsub">Se muestran hasta 100 consultas en la tabla para conservar legibilidad; las metricas generales se calculan con todo el informe.</div><div id="queryTable" class="tablewrap"><table><tbody><tr><td>Sin datos.</td></tr></tbody></table></div></div></details>
+</div></details></section>
+
+<section id="demografia" class="section"><details class="accordion"><summary><span class="module-title">Demografia</span><span class="chevron">v</span></summary><div class="module-body">
+  <div class="chart-grid">
+    <div class="chart-card"><div class="chart-head"><div><h3>Sexo</h3><p>Participacion de los segmentos disponibles en GA4.</p></div><span class="tip" data-tip="Porcentaje calculado sobre los usuarios que GA4 permite mostrar."><span class="tipi">i</span></span></div><div id="genderDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Provincia / Region</h3><p>Escala completa de provincias o regiones disponibles.</p></div><span class="tip" data-tip="La barra mayor equivale a la provincia o region con mas usuarios."><span class="tipi">i</span></span></div><div class="trend-controls" style="margin-bottom:10px"><div class="field"><label>Pais</label><select id="regionCountrySelect"><option value="">Todos los paises</option></select></div></div><div id="regionBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Participacion de provincias principales</h3><p>Las provincias restantes se agrupan como "Otros".</p></div><span class="tip" data-tip="El grafico circular muestra las provincias principales."><span class="tipi">i</span></span></div><div id="regionDonut"><div class="empty chart-empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Pais</h3><p>Pastel de paises principales y escala completa en barras.</p></div><span class="tip" data-tip="El pastel resume los paises principales y agrupa el resto como Otros."><span class="tipi">i</span></span></div><div id="countryDonut"><div class="empty chart-empty">Sin datos.</div></div><div id="countryBars" class="barlist rich" style="margin-top:12px"><div class="empty">Sin datos.</div></div></div>
+    <div class="chart-card"><div class="chart-head"><div><h3>Ciudad</h3><p>Ciudades ordenadas por usuarios; se muestran todos los registros disponibles.</p></div><span class="tip" data-tip="Escala relativa a la ciudad de mayor volumen."><span class="tipi">i</span></span></div><div class="trend-controls" style="margin-bottom:10px"><div class="field"><label>Pais</label><select id="cityCountrySelect"><option value="">Todos los paises</option></select></div></div><div id="cityBars" class="barlist rich"><div class="empty">Sin datos.</div></div></div>
+  </div>
+  <details class="ai-accordion" open><summary>Lectura descriptiva <span class="chevron-mini">v</span></summary><div id="demoNote" class="ai-body">Sin datos.</div></details>
+</div></details></section>
+
+<section id="validacion" class="section"><details class="accordion"><summary><span class="module-title">Validacion tecnica</span><span class="chevron">v</span></summary><div class="module-body"><div id="validation"><div class="empty">Sin archivos cargados.</div></div></div></details></section>
+<section id="fuentes-dashboard" class="section"><details class="accordion"><summary><span class="module-title">Registro de reportes procesados</span><span class="chevron">v</span></summary><div class="module-body"><div id="fileCards" class="filegrid"><div class="empty">Sin archivos cargados.</div></div></div></details></section>
+</main>
+</div>
+<div id="tooltip" class="floating" role="tooltip" aria-hidden="true"></div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

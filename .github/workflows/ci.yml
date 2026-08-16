@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: "Dashboard Web Grupo TERRA/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: "Dashboard Web Grupo TERRA"
+        run: npm ci
+
+      - name: Lint
+        working-directory: "Dashboard Web Grupo TERRA"
+        run: npm run lint
+
+      - name: Test
+        working-directory: "Dashboard Web Grupo TERRA"
+        run: npm run test
+
+      - name: Build
+        working-directory: "Dashboard Web Grupo TERRA"
+        run: npm run build
+
+      - name: Audit dependencies (no falla el build, solo reporta)
+        working-directory: "Dashboard Web Grupo TERRA"
+        run: npm audit --audit-level=high || true

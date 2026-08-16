@@ -1,0 +1,15 @@
+/* Variables de diseno (tema oscuro), reset base y elementos de formulario/tabla/tooltip
+   compartidos por todo el dashboard. Corresponde al bloque original anterior a los
+   comentarios de version "V14.2"/"V15" (ver layout.css y components.css). */
+:root{
+  --bg:#0b0f1a;--surface:#111827;--surface2:#172033;--surface3:#1d273d;
+  --border:#25344e;--border2:#33445f;--text:#f1f5f9;--muted:#94a3b8;
+  --muted2:#64748b;--orange:#ff7900;--orange2:#ffad5e;--green:#22c55e;
+  --red:#ef4444;--yellow:#f59e0b;--blue:#60a5fa;--purple:#a78bfa;--tomato:#ff6347;--tomato2:#ff8a73;
+  --radius:16px;--shadow:0 18px 60px rgba(0,0,0,.35)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{color:var(--blue);text-decoration:none}
+button,input,select{font:inherit}
