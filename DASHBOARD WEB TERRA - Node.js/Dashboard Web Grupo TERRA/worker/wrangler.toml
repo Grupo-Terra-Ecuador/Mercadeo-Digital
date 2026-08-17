@@ -1,0 +1,15 @@
+name = "terra-dashboard-ai"
+main = "src/index.js"
+compatibility_date = "2026-08-16"
+
+# Origenes autorizados a llamar este Worker (separados por coma).
+# 5173/4173 = servidor de dev / preview de Vite (proyecto anterior, ya no se usa).
+# 3000 = servidor de dev/produccion de Next.js (npm run dev / npm run start).
+# Actualiza/agrega el dominio de produccion cuando el dashboard este publicado, y
+# despliega con `npx wrangler deploy` para que el cambio tome efecto.
+[vars]
+ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173"
+ANTHROPIC_MODEL = "claude-sonnet-5"
+
+# El secreto NUNCA va aqui. Se configura con:
+#   wrangler secret put ANTHROPIC_API_KEY

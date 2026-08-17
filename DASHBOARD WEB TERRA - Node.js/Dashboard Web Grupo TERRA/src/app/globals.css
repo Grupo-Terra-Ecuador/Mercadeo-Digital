@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* Tokens de marca Grupo TERRA (mismos valores que el tokens.css original), expuestos
+   como variables --color-* de Tailwind v4: generan utilidades (bg-orange, text-muted, ...)
+   y siguen disponibles como var(--color-*) para el puñado de sitios (SVG, conic-gradient)
+   que no pueden expresarse con clases de utilidad. */
+@theme {
+  --color-bg: #0b0f1a;
+  --color-surface: #111827;
+  --color-surface-2: #172033;
+  --color-surface-3: #1d273d;
+  --color-border: #25344e;
+  --color-border-2: #33445f;
+  --color-text: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-muted-2: #64748b;
+  --color-orange: #ff7900;
+  --color-orange-2: #ffad5e;
+  --color-green: #22c55e;
+  --color-red: #ef4444;
+  --color-yellow: #f59e0b;
+  --color-blue: #60a5fa;
+  --color-purple: #a78bfa;
+  --color-tomato: #ff6347;
+  --color-tomato-2: #ff8a73;
+  --radius-terra: 16px;
+  --shadow-terra: 0 18px 60px rgba(0, 0, 0, 0.35);
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Detalles puntuales que Tailwind no expresa como utilidad (scrollbar con degradado). */
+@layer utilities {
+  .scrollbar-terra {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-orange) rgba(255, 255, 255, 0.05);
+  }
+  .scrollbar-terra::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scrollbar-terra::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
+  }
+  .scrollbar-terra::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--color-border-2), var(--color-orange));
+    border-radius: 999px;
+    border: 2px solid rgba(11, 15, 26, 0.7);
+  }
+  .scrollbar-terra::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--color-orange-2), var(--color-orange));
+  }
+
+  .tooltip-show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Menu movil: clases alternadas por JS (lib/ui/nav.ts), igual en la app en vivo y en el
+     HTML exportado (ver lib/export/engine-entry.ts). */
+  .sidebar-open {
+    transform: translateX(0);
+  }
+  .overlay-show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+}
