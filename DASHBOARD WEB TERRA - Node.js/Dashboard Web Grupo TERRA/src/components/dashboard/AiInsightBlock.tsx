@@ -18,8 +18,24 @@ const MODULE_LABELS: Record<AiInsightModuleId, string> = {
   demografia: "Demografia",
 };
 
+const STATUS_DOT_CLASS: Record<string, string> = {
+  unknown: "bg-muted-2",
+  checking: "bg-yellow animate-pulse",
+  ready: "bg-green",
+  unavailable: "bg-red",
+};
+
+const STATUS_TEXT_CLASS: Record<string, string> = {
+  unknown: "text-muted",
+  checking: "text-yellow",
+  ready: "text-green",
+  unavailable: "text-red",
+};
+
 export default function AiInsightBlock({ moduleId }: { moduleId: AiInsightModuleId }) {
   const model = useDashboardStore((s) => s.model);
+  const aiStatus = useDashboardStore((s) => s.aiStatus);
+  const checkAiStatus = useDashboardStore((s) => s.checkAiStatus);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -73,6 +89,24 @@ export default function AiInsightBlock({ moduleId }: { moduleId: AiInsightModule
           </button>
           <span className="text-[11px] text-muted">
             Diagnostico generado por IA a partir de los datos agregados de este modulo. Se genera solo al presionar el boton, nunca automaticamente.
+          </span>
+        </div>
+        <div className="mb-2.5 flex flex-wrap items-center gap-2 border-t border-blue/[0.18] pt-2.5">
+          <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${STATUS_DOT_CLASS[aiStatus.state]}`} />
+          <span className={`text-[11px] font-bold ${STATUS_TEXT_CLASS[aiStatus.state]}`}>{aiStatus.message}</span>
+          <button
+            type="button"
+            disabled={aiStatus.state === "checking"}
+            onClick={() => checkAiStatus()}
+            className="rounded-[10px] border border-border-2 px-2.5 py-1 text-[11px] font-extrabold text-muted transition hover:bg-surface-2 hover:text-text disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            {aiStatus.state === "checking" ? "Verificando..." : "Verificar conexion"}
+          </button>
+          <span
+            className="inline-grid h-3.5 w-3.5 cursor-help place-items-center rounded-full bg-white/10 text-[10px] font-black text-muted-2"
+            data-tip="Hace una peticion minima real a Claude para confirmar que la API key y el credito/facturacion de Anthropic estan activos. Tiene un costo minimo (no es gratis), por eso es manual. El resultado se comparte entre todos los modulos."
+          >
+            i
           </span>
         </div>
         {error ? (

@@ -22,11 +22,18 @@ function corsHeadersFor(request, env) {
   if (!allowed.includes(origin)) return null;
   return {
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
+}
+
+// Mensaje de "sin credito/facturacion" que devuelve Anthropic: no viene con un codigo/tipo
+// propio (es un invalid_request_error generico), asi que se detecta por contenido. Se
+// reutiliza tanto en /api/ai-insight como en /api/ai-status.
+function isBillingMessage(anthropicMessage) {
+  return /credit balance|billing/i.test(anthropicMessage || '');
 }
 
 function jsonResponse(body, status, cors) {
@@ -128,7 +135,7 @@ async function handleAiInsight(request, env, cors) {
     } catch {
       // Se ignora: si el cuerpo no es JSON valido, se usa el mensaje generico de abajo.
     }
-    if (/credit balance|billing/i.test(anthropicMessage)) {
+    if (isBillingMessage(anthropicMessage)) {
       return jsonResponse(
         {
           error:
@@ -156,6 +163,65 @@ async function handleAiInsight(request, env, cors) {
   return jsonResponse({ insight: textBlock.text }, 200, cors);
 }
 
+// Verificacion manual bajo demanda ("Verificar conexion" en el dashboard, nunca automatica)
+// de si el Worker puede generar diagnosticos ahora mismo. Anthropic no ofrece una forma
+// gratuita de consultar solo el saldo/facturacion: la unica manera confiable de saberlo es
+// intentar una generacion real minima (1 token de salida), que si tiene costo (minimo).
+async function handleAiStatus(request, env, cors) {
+  if (!env.ANTHROPIC_API_KEY) {
+    return jsonResponse({ configured: false, ready: false, message: 'El Worker no tiene configurada ANTHROPIC_API_KEY.' }, 200, cors);
+  }
+
+  const model = env.ANTHROPIC_MODEL || 'claude-sonnet-5';
+  let anthropicRes;
+  try {
+    anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 1,
+        messages: [{ role: 'user', content: 'ping' }],
+      }),
+    });
+  } catch (err) {
+    console.error('Fallo de red hacia Anthropic (ai-status):', err);
+    return jsonResponse({ configured: true, ready: false, message: 'No se pudo contactar la API de Anthropic para verificar el estado.' }, 200, cors);
+  }
+
+  if (anthropicRes.ok) {
+    return jsonResponse({ configured: true, ready: true, message: 'Conexion con la IA activa y con credito disponible.' }, 200, cors);
+  }
+
+  const detail = await anthropicRes.text().catch(() => '');
+  let anthropicMessage = '';
+  try {
+    anthropicMessage = JSON.parse(detail)?.error?.message || '';
+  } catch {
+    // Se ignora: si el cuerpo no es JSON valido, se usa el mensaje generico de abajo.
+  }
+  console.error('Anthropic API error (ai-status)', anthropicRes.status, detail);
+
+  if (isBillingMessage(anthropicMessage)) {
+    return jsonResponse(
+      { configured: true, ready: false, message: 'La cuenta de Anthropic no tiene creditos/facturacion configurada (console.anthropic.com -> Billing).' },
+      200,
+      cors
+    );
+  }
+  if (anthropicRes.status === 401) {
+    return jsonResponse({ configured: true, ready: false, message: 'La API key configurada en el Worker no es valida.' }, 200, cors);
+  }
+  if (anthropicRes.status === 429) {
+    return jsonResponse({ configured: true, ready: false, message: 'Servicio de IA saturado en este momento, intenta de nuevo en unos segundos.' }, 200, cors);
+  }
+  return jsonResponse({ configured: true, ready: false, message: 'La API de Anthropic devolvio un error al verificar el estado.' }, 200, cors);
+}
+
 export default {
   async fetch(request, env) {
     const cors = corsHeadersFor(request, env);
@@ -171,6 +237,11 @@ export default {
     if (request.method === 'POST' && url.pathname === '/api/ai-insight') {
       if (!cors) return jsonResponse({ error: 'Origen no autorizado.' }, 403, null);
       return handleAiInsight(request, env, cors);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/api/ai-status') {
+      if (!cors) return jsonResponse({ error: 'Origen no autorizado.' }, 403, null);
+      return handleAiStatus(request, env, cors);
     }
 
     return jsonResponse({ error: 'Not found' }, 404, cors);

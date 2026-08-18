@@ -23,4 +23,17 @@ await build({
   target: ["es2020"],
   tsconfig: path.join(root, "tsconfig.json"),
   logLevel: "info",
+  // El grafo de imports de engine-entry.ts arrastra src/lib/config.ts (via el store ->
+  // integrations/google/oauth.ts), que en la app de Next.js lee `process.env.NEXT_PUBLIC_*`
+  // — Next.js reemplaza esas referencias por su valor real en tiempo de build. esbuild, al
+  // compilar este bundle aparte, NO lo hace: sin este `define`, `process` queda como
+  // variable global de Node inexistente en el navegador y el bundle entero revienta con
+  // "process is not defined" apenas se ejecuta (nunca llega a exponer
+  // window.TerraExportEngine). El HTML exportado nunca usa estos valores (no vuelve a
+  // conectarse a Google ni a la IA), asi que basta con reemplazarlos por texto vacio.
+  define: {
+    "process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID": '""',
+    "process.env.NEXT_PUBLIC_AI_WORKER_URL": '""',
+    "process.env.NODE_ENV": '"production"',
+  },
 });

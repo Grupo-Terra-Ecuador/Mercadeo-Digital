@@ -65,6 +65,13 @@ function cloneSections(ids: string[]): string {
     .join("\n");
 }
 
+// Mismas clases que src/components/layout/Sidebar.tsx: el nav de la app en vivo lo pinta
+// React componente por componente, pero aqui se arma el HTML a mano (no hay React en el
+// archivo exportado), asi que hay que repetir las mismas clases explicitamente en vez de
+// depender de un selector de CSS que las aplique solo.
+const NAV_LINK_CLASS =
+  "relative my-px flex items-center gap-2 rounded-[10px] border border-transparent px-2.5 py-2.5 text-[13px] font-bold text-muted-2 transition-all hover:bg-tomato/[.09] hover:text-tomato-2 aria-[current=page]:translate-x-0.5 aria-[current=page]:border-tomato/[.34] aria-[current=page]:bg-gradient-to-r aria-[current=page]:from-tomato/[.28] aria-[current=page]:to-tomato/[.12] aria-[current=page]:text-white aria-[current=page]:shadow-[0_8px_24px_rgba(255,99,71,.13),inset_3px_0_0_var(--color-tomato)]";
+
 function buildNavLinks(ids: string[]): string {
   const { exportModules } = dashboardStoreApi.getState();
   return ids
@@ -72,7 +79,7 @@ function buildNavLinks(ids: string[]): string {
       const section = document.getElementById(id);
       const moduleTitle = section?.querySelector(".module-title")?.textContent?.trim();
       const fallback = exportModules.find((m) => m.id === id)?.label || id;
-      return `<a href="#${esc(id)}">${esc(moduleTitle || fallback)}</a>`;
+      return `<a href="#${esc(id)}" class="${NAV_LINK_CLASS}">${esc(moduleTitle || fallback)}</a>`;
     })
     .join("");
 }

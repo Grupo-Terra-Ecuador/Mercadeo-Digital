@@ -18,6 +18,7 @@ import { dateISO, parseReportDateToken } from "@/lib/core/format";
 import { requestGoogleAccessToken, revokeGoogleAccessToken } from "@/lib/integrations/google/oauth";
 import { fetchGA4Properties, fetchAllGA4Datasets, type GA4Property } from "@/lib/integrations/google/ga4";
 import { fetchGSCSites, fetchGSCDataset } from "@/lib/integrations/google/search-console";
+import { checkAiStatus as requestAiStatus } from "@/lib/integrations/ai/client";
 import type { DashboardModel, Dataset, Settings } from "@/lib/core/types";
 
 export interface ExportModuleDef {
@@ -78,6 +79,18 @@ function googleSourceName(propertyId: string, siteUrl: string, ga4Properties: GA
   return gscName || "GoogleAnalytics";
 }
 
+export type AiStatusState = "unknown" | "checking" | "ready" | "unavailable";
+
+export interface AiStatusInfo {
+  state: AiStatusState;
+  message: string;
+}
+
+const DEFAULT_AI_STATUS: AiStatusInfo = {
+  state: "unknown",
+  message: 'Estado no verificado todavia. Presiona "Verificar conexion" para comprobarlo.',
+};
+
 export interface DashboardState {
   files: File[];
   datasets: Dataset[];
@@ -90,6 +103,7 @@ export interface DashboardState {
   banner: BannerState;
   processing: boolean;
   google: GoogleState;
+  aiStatus: AiStatusInfo;
 
   setSettings: (partial: Partial<Settings>) => void;
   refreshModel: () => void;
@@ -105,6 +119,8 @@ export interface DashboardState {
   connectGoogle: () => Promise<void>;
   disconnectGoogle: () => void;
   processFromGoogle: (propertyId: string, siteUrl: string) => Promise<void>;
+
+  checkAiStatus: () => Promise<void>;
 }
 
 // Store "vanilla", sin dependencia de React: es el que deben importar lib/* (charts,
@@ -123,6 +139,7 @@ export const dashboardStoreApi: StoreApi<DashboardState> = createStore<Dashboard
   banner: { ...DEFAULT_BANNER },
   processing: false,
   google: { ...DEFAULT_GOOGLE_STATE },
+  aiStatus: { ...DEFAULT_AI_STATUS },
 
   setSettings: (partial) => set((s) => ({ settings: { ...s.settings, ...partial } })),
 
@@ -311,5 +328,16 @@ export const dashboardStoreApi: StoreApi<DashboardState> = createStore<Dashboard
         banner: { type: "bad", message: "No fue posible obtener los datos de Google: " + message },
       });
     }
+  },
+
+  // Verificacion manual, bajo demanda (nunca automatica): tiene un costo minimo real en la
+  // cuenta de Anthropic, asi que solo se llama cuando el usuario presiona "Verificar
+  // conexion" en cualquiera de los bloques de IA. El resultado es compartido: una vez
+  // verificado en un modulo, los otros 9 modulos reflejan el mismo estado sin volver a
+  // llamar al Worker.
+  checkAiStatus: async () => {
+    set({ aiStatus: { state: "checking", message: "Verificando conexion..." } });
+    const result = await requestAiStatus();
+    set({ aiStatus: { state: result.ready ? "ready" : "unavailable", message: result.message } });
   },
 }));

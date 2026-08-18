@@ -11,6 +11,25 @@ export interface GA4Property {
   label: string;
 }
 
+// La GA4 Data API limita cuantas peticiones concurrentes acepta por propiedad (la cuota
+// estandar de Google es 10 "concurrent requests"). fetchAllGA4Datasets necesita 17
+// reportes distintos; pedirlos todos con un solo Promise.all (como hacia el proyecto
+// original) dispara un error 429 "Exhausted concurrent requests quota" en cuentas reales.
+// Este helper los ejecuta en tandas (maximo `limit` a la vez) preservando el orden de
+// resultados, sin cambiar que reportes se piden ni que datos trae cada uno.
+async function runWithConcurrencyLimit<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+  const results = new Array<T>(tasks.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < tasks.length) {
+      const current = nextIndex++;
+      results[current] = await tasks[current]();
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, () => worker()));
+  return results;
+}
+
 interface GA4AccountSummary {
   displayName: string;
   propertySummaries?: { property: string; displayName: string }[];
@@ -101,25 +120,28 @@ export async function fetchAllGA4Datasets(
   reportEnd: Date | null
 ): Promise<Dataset[]> {
   const [traffic, userChannel, dayHour, sessionsQuality, usersDaily, totalsAgg, userSource, pages, device, os, model, browser, screen, gender, country, region, city] =
-    await Promise.all([
-      runGA4Report(propertyId, ["date", "sessionDefaultChannelGroup"], ["sessions", "totalUsers", "bounceRate"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["date", "firstUserDefaultChannelGroup"], ["totalUsers", "newUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["date", "dayOfWeek", "hour"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["date"], ["sessions", "bounceRate"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["date"], ["totalUsers", "newUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, [], ["totalUsers", "newUsers", "activeUsers", "userEngagementDuration", "eventCount"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["firstUserSourceMedium"], ["totalUsers", "newUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["pagePathPlusQueryString"], ["screenPageViews", "totalUsers", "bounceRate"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["deviceCategory"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["operatingSystem"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["mobileDeviceModel"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["browser"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["screenResolution"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["userGender"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["country"], ["totalUsers", "bounceRate"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["country", "region"], ["totalUsers"], dateFrom, dateTo),
-      runGA4Report(propertyId, ["country", "city"], ["totalUsers"], dateFrom, dateTo),
-    ]);
+    await runWithConcurrencyLimit(
+      [
+        () => runGA4Report(propertyId, ["date", "sessionDefaultChannelGroup"], ["sessions", "totalUsers", "bounceRate"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["date", "firstUserDefaultChannelGroup"], ["totalUsers", "newUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["date", "dayOfWeek", "hour"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["date"], ["sessions", "bounceRate"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["date"], ["totalUsers", "newUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, [], ["totalUsers", "newUsers", "activeUsers", "userEngagementDuration", "eventCount"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["firstUserSourceMedium"], ["totalUsers", "newUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["pagePathPlusQueryString"], ["screenPageViews", "totalUsers", "bounceRate"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["deviceCategory"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["operatingSystem"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["mobileDeviceModel"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["browser"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["screenResolution"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["userGender"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["country"], ["totalUsers", "bounceRate"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["country", "region"], ["totalUsers"], dateFrom, dateTo),
+        () => runGA4Report(propertyId, ["country", "city"], ["totalUsers"], dateFrom, dateTo),
+      ],
+      5
+    );
 
   return [
     ga4ResponseToDataset(
