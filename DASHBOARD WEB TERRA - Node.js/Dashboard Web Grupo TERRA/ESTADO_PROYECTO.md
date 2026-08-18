@@ -97,7 +97,7 @@ Dashboard Web Grupo TERRA/
 
 ---
 
-## 4. Bugs encontrados y corregidos durante la migracion
+## 4. Bugs y mejoras encontrados/agregados despues de la migracion
 
 Ademas del propio trabajo de traduccion linea por linea (JS → TS, HTML a mano → JSX), se
 encontraron y corrigieron estos problemas reales:
@@ -181,6 +181,29 @@ encontraron y corrigieron estos problemas reales:
    - **Se desplego** el Worker (`npx wrangler deploy`, con autorizacion explicita del
      usuario) para publicar el `ALLOWED_ORIGINS` actualizado. Verificado con `curl`:
      `http://localhost:3000` ahora recibe `204` con las cabeceras CORS correctas.
+9. **Mejora nueva (no un bug): indicador de estado de la IA**, pedida por el usuario despues
+   de resolver el punto 8 ("si quiero que el diagnostico se conecte a Claude, deberia haber
+   una funcionalidad para intuir el acceso?"). Aclaracion de arquitectura: la IA **no** es
+   una conexion por-usuario como Google (no hay "iniciar sesion en Claude"); es una unica
+   API key compartida, guardada como secreto en el Worker. Lo que si puede fallar es que esa
+   cuenta de Anthropic no tenga credito activo. Como Anthropic no ofrece una forma gratuita
+   de solo consultar el saldo, la verificacion es **manual bajo demanda** (boton, nunca
+   automatica, mismo principio de costo-controlado que "Generar diagnostico"):
+   - `worker/src/index.js`: nuevo endpoint `GET /api/ai-status` — intenta una generacion
+     minima real (1 token) contra Anthropic y traduce el resultado a
+     `{ configured, ready, message }` (mismo `isBillingMessage()` que ya detectaba el 402 en
+     `/api/ai-insight`, factorizado a una funcion compartida). CORS ampliado a `GET`.
+   - `src/lib/integrations/ai/client.ts`: `checkAiStatus()`.
+   - `src/store/dashboard-store.ts`: estado compartido `aiStatus` + accion `checkAiStatus()`
+     — se verifica una vez y los 10 modulos reflejan el mismo resultado (no se re-verifica
+     por modulo).
+   - `src/components/dashboard/AiInsightBlock.tsx`: punto de color + mensaje + boton
+     "Verificar conexion".
+   - **Desplegado** (`npx wrangler deploy`, con autorizacion explicita del usuario) y
+     verificado en vivo: el estado real actual es `configured: true, ready: false` — **la
+     API key esta bien configurada, pero la cuenta de Anthropic no tiene credito/facturacion
+     activa** (mismo bloqueador ya documentado en la seccion 7; ahora confirmado con
+     evidencia directa del endpoint, no solo inferido).
 
 Todo lo demas (formulas de agregacion, sinonimos ES/EN, deteccion de encabezado CSV,
 formato de numeros/fechas es-EC, que reportes se piden a la API de GA4/Search Console y como
@@ -216,10 +239,15 @@ punto 8) — verificado con `curl` contra el Worker real: preflight CORS respond
 las cabeceras correctas para ese origen. Version desplegada:
 `f07bfb0c-ef87-4f93-8ffa-c713ae769697`.
 
-**Bloqueador que ya existia en el proyecto original, sin cambios:** la cuenta de Anthropic
-en `console.anthropic.com` necesita creditos/facturacion configurados para que "Generar
-diagnostico" devuelva una respuesta real (si no, el Worker responde 402 con un mensaje
-especifico al respecto, distinto del error de conexion).
+**Nuevo: indicador de estado "Verificar conexion"** en cada bloque de IA (ver seccion 4,
+punto 9) — verificacion manual bajo demanda (tiene costo minimo real, por eso no es
+automatica), endpoint `GET /api/ai-status`, ya desplegado.
+
+**Bloqueador que ya existia en el proyecto original, sin cambios, ahora confirmado con el
+nuevo indicador:** la cuenta de Anthropic en `console.anthropic.com` **no tiene
+creditos/facturacion activa** (`configured: true, ready: false`) — la API key esta bien
+configurada, solo falta agregar saldo en Billing para que "Generar diagnostico" devuelva
+una respuesta real.
 
 ---
 
@@ -240,7 +268,7 @@ especifico al respecto, distinto del error de conexion).
 
 - [x] ~~Desplegar el cambio de `ALLOWED_ORIGINS` en el Worker~~ — hecho, ver seccion 4 punto 8.
 - [ ] **Probar la conexion real con Google** (OAuth + traer datos de una propiedad GA4 real) — el usuario ya conecto su cuenta real y encontro/corrigio el bug de cuota concurrente (seccion 4, punto 5); falta confirmar una corrida completa sin errores.
-- [ ] Agregar creditos/facturacion en `console.anthropic.com` para que "Generar diagnostico" funcione con una respuesta real (mismo bloqueador que el proyecto original).
+- [ ] **Agregar creditos/facturacion en `console.anthropic.com` -> Billing** para que "Generar diagnostico" funcione con una respuesta real — confirmado con el indicador "Verificar conexion" (seccion 4, punto 9): la API key esta bien, solo falta esto.
 - [ ] Decidir hosting de produccion para la carpeta `out/` (cualquier hosting estatico: Cloudflare Pages, Netlify, GitHub Pages, Vercel, etc.) y agregar ese dominio a `ALLOWED_ORIGINS` del Worker antes de publicar.
 - [ ] Revisar/portar `SECURITY.md` del proyecto original (politica de seguridad, CSP recomendada) — no se copio en esta migracion.
 - [ ] Rotar `NEXT_PUBLIC_GOOGLE_CLIENT_ID` y `ANTHROPIC_API_KEY` si aun no se hizo (recomendacion heredada del proyecto original: ambos se pegaron alguna vez en una conversacion de chat antes de guardarse como variable de entorno/secreto).
