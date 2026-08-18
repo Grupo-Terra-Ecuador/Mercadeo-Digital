@@ -274,6 +274,42 @@ una respuesta real.
 - [ ] Rotar `NEXT_PUBLIC_GOOGLE_CLIENT_ID` y `ANTHROPIC_API_KEY` si aun no se hizo (recomendacion heredada del proyecto original: ambos se pegaron alguna vez en una conversacion de chat antes de guardarse como variable de entorno/secreto).
 - [ ] Escalabilidad de mediano plazo (heredado del diagnostico original, aun vigente): mover el parseo de CSV a un Web Worker para archivos grandes; cache local (IndexedDB); tipado mas estricto donde hoy se uso `unknown`/casts puntuales.
 
+### 7.1 Sugerencias de nuevos modulos/metricas (propuestas por Claude, sin decision del usuario todavia)
+
+El usuario pidio sugerencias de metricas de GA4/Search Console que agreguen valor y no esten
+cubiertas hoy. Se le presento esta lista y quedo pendiente de que elija cuales priorizar
+(la pregunta de seleccion se interrumpio antes de responderse) — **nada de esto esta
+implementado**, es solo el registro de las opciones propuestas para no perder el hilo:
+
+**GA4:**
+1. **Eventos por nombre** (la mas valiosa): hoy el Resumen solo muestra un total de eventos
+   (`eventCount`) sin desglosar por tipo (`click`, `scroll`, `form_submit`,
+   `file_download`, etc.). GA4 es un modelo basado en eventos; esto hoy es un punto ciego.
+2. **Paginas de entrada / landing pages**: distinto del modulo "Paginas" actual (que mide
+   vistas totales) — mide por donde *entra* la gente al sitio.
+3. **Calidad de sesion por canal/pagina**: tiempo de interaccion promedio y paginas por
+   sesion (hoy solo existe la tasa de rebote como señal de calidad).
+4. **Detalle de campana** (`utm_campaign`), no solo canal y fuente/medio.
+5. **Retencion** (usuarios que vuelven semana tras semana) — mas estrategico que tecnico.
+
+**Search Console:**
+1. **Rendimiento por pagina** (la mas valiosa): el modulo "Busqueda organica" actual solo
+   desglosa por *consulta*; Search Console tambien permite desglosar por *pagina* (URL),
+   mas accionable para saber que arreglar.
+2. **Tendencia en el tiempo** de clics/impresiones/CTR/posicion: hoy es una foto fija del
+   periodo (sin grafica diaria), a diferencia de Trafico/Usuarios que si tienen tendencia.
+3. **Rendimiento por dispositivo** (movil vs. escritorio en busqueda).
+4. **Rendimiento por pais** (complementa la demografia de GA4 desde intencion de busqueda).
+5. **Cobertura de indexacion** (paginas indexadas/excluidas por Google) — requiere una API
+   de Search Console distinta a la que ya se usa (Search Analytics); mas trabajo de
+   integracion que las demas.
+
+**Limite de alcance a decidir:** el proyecto original excluyo a proposito "embudos, leads,
+estimaciones comerciales, ecommerce, marcas y diagnosticos de venta" (texto literal del
+hero del dashboard). Eventos/conversiones caen cerca de ese limite: se pueden mostrar
+*conteos de eventos tecnicos* sin tratarlos como ventas, pero conversiones/metas reales
+ampliarian el alcance original — pendiente de que el usuario decida si cruzar esa linea.
+
 ---
 
 ## 8. Como correr todo localmente
