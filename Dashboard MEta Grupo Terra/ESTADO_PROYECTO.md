@@ -150,6 +150,20 @@ Dashboard MEta Grupo Terra/          (el espacio en "MEta" es intencional, no co
     (`accounts[0]`), aunque `/conexiones` ya listaba todas las disponibles. Corregido trayendo
     todas en paralelo y uniendo los resultados — ver sección 3. **Sin verificar visualmente
     con una segunda cuenta real todavía** (solo hay una conectada hoy) — ver sección 7.
+11. **Una pestaña del navegador que ya estaba abierta se quedaba mostrando datos de ejemplo**
+    después de que el servidor de desarrollo se reiniciara (por ejemplo, entre sesiones de
+    trabajo) y la conexión con Meta volviera a estar disponible — `DashboardDataProvider`
+    solo vuelve a pedir datos cuando cambian los filtros de fecha, no solo. El usuario lo
+    reportó pensando que era un bug de datos ("¿por qué me muestra campañas que no son de esa
+    cuenta?"), cuando en realidad la API ya respondía bien — confirmado pidiendo la API
+    directo con `curl` mientras la pestaña seguía mostrando datos viejos. Corregido agregando
+    un botón **"Actualizar datos"** en `FilterBar.tsx` que vuelve a pedir los datos sin
+    esperar a un cambio de filtro. Detalle técnico: la primera implementación (una función
+    `refresh` con `useCallback` invocada directo dentro de un `useEffect`) violaba la regla de
+    ESLint `react-hooks/set-state-in-effect`; se resolvió con un contador `refreshTick` en el
+    estado — `refresh()` solo incrementa ese contador (desde el `onClick`, no desde un efecto,
+    así que la regla no aplica), y el mismo `useEffect` de carga original (que sí pasa esa
+    regla) lo tiene como dependencia adicional.
 
 ---
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useFiltersStore } from "@/store/filters-store";
 import { previousPeriod } from "@/lib/metrics";
 import { DATASET } from "@/lib/mock/dataset";
@@ -18,9 +18,11 @@ export interface DashboardDataState {
   isMock: boolean;
   loading: boolean;
   error: string | null;
+  /** Vuelve a pedir los datos al servidor sin esperar a que cambien los filtros de fecha. */
+  refresh: () => void;
 }
 
-const MOCK_STATE: DashboardDataState = {
+const MOCK_STATE: Omit<DashboardDataState, "refresh"> = {
   accounts: DATASET.accounts,
   brands: DATASET.brands,
   campaigns: DATASET.campaigns,
@@ -33,12 +35,14 @@ const MOCK_STATE: DashboardDataState = {
   error: null,
 };
 
-const DashboardDataContext = createContext<DashboardDataState>(MOCK_STATE);
+const DashboardDataContext = createContext<DashboardDataState>({ ...MOCK_STATE, refresh: () => {} });
 
 export function DashboardDataProvider({ children }: { children: ReactNode }) {
   const dateStart = useFiltersStore((s) => s.dateStart);
   const dateEnd = useFiltersStore((s) => s.dateEnd);
-  const [state, setState] = useState<DashboardDataState>(MOCK_STATE);
+  const [state, setState] = useState<Omit<DashboardDataState, "refresh">>(MOCK_STATE);
+  // Cambiar este contador dispara el mismo efecto de carga de abajo, sin depender de los filtros de fecha.
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const fetchRange = useMemo(() => {
     const prev = previousPeriod(dateStart, dateEnd);
@@ -82,9 +86,11 @@ export function DashboardDataProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [fetchRange]);
+  }, [fetchRange, refreshTick]);
 
-  return <DashboardDataContext.Provider value={state}>{children}</DashboardDataContext.Provider>;
+  const refresh = useCallback(() => setRefreshTick((t) => t + 1), []);
+
+  return <DashboardDataContext.Provider value={{ ...state, refresh }}>{children}</DashboardDataContext.Provider>;
 }
 
 export function useDashboardData(): DashboardDataState {

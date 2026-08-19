@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { RotateCcw } from "lucide-react";
+import { RefreshCw, RotateCcw } from "lucide-react";
 import { useFiltersStore, DEFAULT_RANGE_START, DEFAULT_RANGE_END } from "@/store/filters-store";
 import { OBJECTIVE_LABELS, STATUS_LABELS, isoDateOffset } from "@/lib/mock/dataset";
 import { getFilteredCampaigns } from "@/lib/selectors";
@@ -15,7 +15,7 @@ const PRESETS = [
 
 export default function FilterBar() {
   const filters = useFiltersStore();
-  const { accounts, brands, campaigns } = useDashboardData();
+  const { accounts, brands, campaigns, refresh, loading, isMock } = useDashboardData();
 
   // Se calcula en cada render (no en un efecto) para no encadenar renders;
   // el único riesgo es un aviso de hidratación inofensivo justo a medianoche.
@@ -158,15 +158,27 @@ export default function FilterBar() {
         </Field>
       </div>
 
-      <button
-        type="button"
-        onClick={filters.resetFilters}
-        disabled={isDefault}
-        className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-[10px] border border-border-2 bg-surface-2 px-3 text-[11px] font-bold text-muted transition hover:text-text disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <RotateCcw size={13} />
-        Limpiar filtros
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => refresh()}
+          disabled={loading}
+          title={isMock ? "Reintentar conexión con Meta y traer datos actualizados" : "Traer los datos más recientes de Meta"}
+          className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-[10px] border border-accent bg-accent px-3 text-[11px] font-bold text-white transition hover:bg-accent-2 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <RefreshCw size={13} className={loading ? "animate-spin" : ""} />
+          {loading ? "Actualizando…" : "Actualizar datos"}
+        </button>
+        <button
+          type="button"
+          onClick={filters.resetFilters}
+          disabled={isDefault}
+          className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-[10px] border border-border-2 bg-surface-2 px-3 text-[11px] font-bold text-muted transition hover:text-text disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <RotateCcw size={13} />
+          Limpiar filtros
+        </button>
+      </div>
     </div>
   );
 }
