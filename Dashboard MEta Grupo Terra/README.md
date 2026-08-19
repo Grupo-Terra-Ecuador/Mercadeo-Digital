@@ -1,36 +1,19 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AGROTA Ads Intelligence
 
-## Getting Started
+Dashboard para analizar campañas de Meta Ads (Facebook/Instagram) de AGROTA y sus marcas.
+Next.js 16 + TypeScript + Tailwind CSS v4.
 
-First, run the development server:
+**Para entender el estado del proyecto, decisiones de arquitectura, bugs corregidos y
+pendientes, ver [`ESTADO_PROYECTO.md`](./ESTADO_PROYECTO.md)** — ese documento es la fuente
+de verdad, no este README.
+
+## Arranque rápido
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev   # http://localhost:4200
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Requiere `META_SYSTEM_USER_TOKEN` configurado en `.env.local` para ver datos reales de Meta
+(ver sección 6 y 5.1 de `ESTADO_PROYECTO.md`). Sin esa variable, el dashboard funciona igual
+con datos de ejemplo.
