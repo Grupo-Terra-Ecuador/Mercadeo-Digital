@@ -3,6 +3,7 @@ import type {
   AudienceDimension,
   AudienceShare,
   Brand,
+  BudgetType,
   Campaign,
   CampaignStatus,
   Creative,
@@ -10,8 +11,9 @@ import type {
   CreativeFormat,
   DailyInsight,
   Objective,
+  QualityRanking,
 } from "@/lib/types";
-import { createRng, pick, rangeFloat, rangeInt } from "./random";
+import { createRng, pick, rangeFloat, rangeInt, shuffle } from "./random";
 
 /**
  * Fecha de referencia del set de datos simulado (los últimos 30 días se
@@ -141,6 +143,16 @@ const CREATIVE_FORMAT_POOL: CreativeFormat[] = [
 
 const CREATIVE_SWATCHES = ["#4c8cff", "#a78bfa", "#22c55e", "#f5b849", "#f0475b", "#7db0ff"];
 
+const RANKING_POOL: QualityRanking[] = [
+  "average",
+  "average",
+  "average",
+  "above_average",
+  "above_average",
+  "below_average",
+  "unknown",
+];
+
 export function isoDateOffset(anchorIso: string, offsetDays: number): string {
   const d = new Date(`${anchorIso}T00:00:00Z`);
   d.setUTCDate(d.getUTCDate() + offsetDays);
@@ -152,16 +164,21 @@ function normalizeShares(values: number[]): number[] {
   return values.map((v) => v / total);
 }
 
+const BUDGET_TYPE_POOL: BudgetType[] = ["daily", "daily", "daily", "lifetime", "lifetime"];
+
 function buildCampaigns(rng: () => number): Campaign[] {
   const campaigns: Campaign[] = [];
   let counter = 1;
   for (const brand of BRANDS) {
     const campaignCount = rangeInt(rng, 4, 5);
-    const linesShuffled = [...CAMPAIGN_LINES].sort(() => rng() - 0.5);
+    const linesShuffled = shuffle(rng, CAMPAIGN_LINES);
     for (let i = 0; i < campaignCount; i++) {
       const objective = pick(rng, OBJECTIVE_POOL);
       const status = pick(rng, STATUS_POOL);
       const startOffset = -rangeInt(rng, 18, 75);
+      const budgetType = pick(rng, BUDGET_TYPE_POOL);
+      const budgetAmount = budgetType === "daily" ? rangeInt(rng, 15, 150) : rangeInt(rng, 300, 4000);
+      const budgetRemaining = budgetType === "lifetime" ? Math.round(budgetAmount * rangeFloat(rng, 0.1, 0.85)) : undefined;
       campaigns.push({
         id: `cmp_${String(counter).padStart(3, "0")}`,
         accountId: brand.accountId,
@@ -169,7 +186,9 @@ function buildCampaigns(rng: () => number): Campaign[] {
         name: `${brand.name} | ${linesShuffled[i % linesShuffled.length]}`,
         status,
         objective,
-        dailyBudget: rangeInt(rng, 25, 220),
+        budgetType,
+        budgetAmount,
+        budgetRemaining,
         startDate: isoDateOffset(ANCHOR_DATE, startOffset),
       });
       counter++;
@@ -185,6 +204,9 @@ interface CampaignParams {
   resultRate: number;
   trendSlope: number;
   weekendFactor: number;
+  /** Referencia interna para simular el gasto diario — independiente del budgetType/budgetAmount que se muestra en la UI. */
+  baseDailySpend: number;
+  landingPageViewRate: number;
 }
 
 function buildCampaignParams(rng: () => number, campaigns: Campaign[]): Map<string, CampaignParams> {
@@ -198,6 +220,8 @@ function buildCampaignParams(rng: () => number, campaigns: Campaign[]): Map<stri
       resultRate: rangeFloat(rng, profile.resultRateRange[0], profile.resultRateRange[1]),
       trendSlope: rangeFloat(rng, -0.015, 0.02),
       weekendFactor: rangeFloat(rng, 0.55, 0.85),
+      baseDailySpend: rangeInt(rng, 25, 220),
+      landingPageViewRate: rangeFloat(rng, 0.55, 0.9),
     });
   }
   return map;
@@ -223,7 +247,7 @@ function buildDailyInsights(
       const noise = rangeFloat(rng, 0.85, 1.15);
       const pausedFactor = campaign.status === "ACTIVE" ? 1 : campaign.status === "PAUSED" ? 0.12 : 0;
 
-      const spend = Math.max(0, campaign.dailyBudget * weekdayFactor * trendFactor * noise * pausedFactor);
+      const spend = Math.max(0, p.baseDailySpend * weekdayFactor * trendFactor * noise * pausedFactor);
       const cpm = p.baseCpm * rangeFloat(rng, 0.92, 1.08);
       const impressions = spend > 0 ? (spend / cpm) * 1000 : 0;
       const ctr = p.baseCtr * rangeFloat(rng, 0.85, 1.15);
@@ -231,6 +255,7 @@ function buildDailyInsights(
       const reach = impressions / p.frequency;
       const resultRate = p.resultRate * rangeFloat(rng, 0.88, 1.12);
       const results = profile.resultBasis === "impressions" ? impressions * resultRate : clicks * resultRate;
+      const landingPageViews = clicks * p.landingPageViewRate * rangeFloat(rng, 0.9, 1.1);
 
       rows.push({
         date,
@@ -240,6 +265,7 @@ function buildDailyInsights(
         impressions: Math.round(impressions),
         clicks: Math.round(clicks),
         results: Math.round(results),
+        landingPageViews: Math.round(Math.min(landingPageViews, clicks)),
       });
     }
   }
@@ -266,6 +292,9 @@ function buildCreatives(rng: () => number, campaigns: Campaign[]): Creative[] {
         ]),
         format: pick(rng, CREATIVE_FORMAT_POOL),
         swatch: pick(rng, CREATIVE_SWATCHES),
+        qualityRanking: pick(rng, RANKING_POOL),
+        engagementRanking: pick(rng, RANKING_POOL),
+        conversionRanking: pick(rng, RANKING_POOL),
       });
       counter++;
     }

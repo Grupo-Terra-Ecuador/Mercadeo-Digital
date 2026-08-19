@@ -11,6 +11,10 @@ export type CreativeFormat = "image" | "video" | "carousel" | "collection";
 
 export type AudienceDimension = "age" | "gender" | "placement" | "device";
 
+export type BudgetType = "daily" | "lifetime" | "none";
+
+export type QualityRanking = "above_average" | "average" | "below_average" | "unknown";
+
 export interface AdAccount {
   id: string;
   name: string;
@@ -31,7 +35,11 @@ export interface Campaign {
   name: string;
   status: CampaignStatus;
   objective: Objective;
-  dailyBudget: number;
+  budgetType: BudgetType;
+  /** Monto del presupuesto en la moneda de la cuenta (dólares, no centavos). 0 si budgetType es "none". */
+  budgetAmount: number;
+  /** Solo aplica a presupuesto de por vida ("lifetime") — lo que queda por gastar. */
+  budgetRemaining?: number;
   startDate: string;
 }
 
@@ -42,6 +50,10 @@ export interface Creative {
   headline: string;
   format: CreativeFormat;
   swatch: string;
+  thumbnailUrl?: string;
+  qualityRanking?: QualityRanking;
+  engagementRanking?: QualityRanking;
+  conversionRanking?: QualityRanking;
 }
 
 export interface DailyInsight {
@@ -52,6 +64,7 @@ export interface DailyInsight {
   impressions: number;
   clicks: number;
   results: number;
+  landingPageViews: number;
 }
 
 export interface CreativeDailyInsight {
@@ -77,4 +90,5 @@ export interface MetricTotals {
   impressions: number;
   clicks: number;
   results: number;
+  landingPageViews: number;
 }

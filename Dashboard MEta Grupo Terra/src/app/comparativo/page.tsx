@@ -15,10 +15,12 @@ import {
 } from "@/lib/metrics";
 import { RESULT_LABELS } from "@/lib/mock/dataset";
 import { formatCurrency, formatCurrencyPrecise, formatDateLong, formatInteger, formatPercent } from "@/lib/format";
+import { useDashboardData } from "@/store/dashboard-data-context";
 import PageHeader from "@/components/ui/PageHeader";
 import ChartCard from "@/components/ui/ChartCard";
 import KpiCard from "@/components/ui/KpiCard";
 import EmptyState from "@/components/ui/EmptyState";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import DataTable, { type DataTableColumn } from "@/components/ui/DataTable";
 import ComparisonTrendChart from "@/components/charts/ComparisonTrendChart";
 
@@ -35,17 +37,18 @@ interface BrandCompareRow {
 
 export default function ComparativoPage() {
   const filters = useFiltersStore();
+  const { brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
 
-  const campaigns = useMemo(() => getFilteredCampaigns(filters), [filters]);
+  const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const prevRange = useMemo(() => previousPeriod(filters.dateStart, filters.dateEnd), [filters.dateStart, filters.dateEnd]);
 
   const insights = useMemo(
-    () => getInsightsForCampaigns(campaigns, filters.dateStart, filters.dateEnd),
-    [campaigns, filters.dateStart, filters.dateEnd]
+    () => getInsightsForCampaigns(campaigns, allInsights, filters.dateStart, filters.dateEnd),
+    [campaigns, allInsights, filters.dateStart, filters.dateEnd]
   );
   const prevInsights = useMemo(
-    () => getInsightsForCampaigns(campaigns, prevRange.start, prevRange.end),
-    [campaigns, prevRange]
+    () => getInsightsForCampaigns(campaigns, allInsights, prevRange.start, prevRange.end),
+    [campaigns, allInsights, prevRange]
   );
 
   const totals = useMemo(() => sumTotals(insights), [insights]);
@@ -89,7 +92,7 @@ export default function ComparativoPage() {
 
     return [...brandIds]
       .map((brandId) => {
-        const brand = getBrandById(brandId);
+        const brand = getBrandById(brands, brandId);
         const brandCampaigns = campaigns.filter((c) => c.brandId === brandId);
         let currentSpend = 0;
         let previousSpend = 0;
@@ -119,7 +122,7 @@ export default function ComparativoPage() {
         };
       })
       .sort((a, b) => b.currentSpend - a.currentSpend);
-  }, [campaigns, insights, prevInsights]);
+  }, [campaigns, insights, prevInsights, brands]);
 
   const columns: DataTableColumn<BrandCompareRow>[] = [
     { key: "name", header: "Marca", sortValue: (r) => r.name, render: (r) => <span className="font-semibold">{r.name}</span> },
@@ -164,6 +167,7 @@ export default function ComparativoPage() {
     return (
       <div>
         <PageHeader title="Análisis comparativo" description="Compara el período seleccionado contra el período inmediatamente anterior." />
+        {error && <ErrorBanner message={error} />}
         <EmptyState />
       </div>
     );
@@ -175,6 +179,7 @@ export default function ComparativoPage() {
         title="Análisis comparativo"
         description={`Período actual: ${formatDateLong(filters.dateStart)} – ${formatDateLong(filters.dateEnd)}  ·  Período anterior: ${formatDateLong(prevRange.start)} – ${formatDateLong(prevRange.end)}`}
       />
+      {error && <ErrorBanner message={error} />}
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <KpiCard label="Inversión" value={formatCurrency(totals.spend)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />

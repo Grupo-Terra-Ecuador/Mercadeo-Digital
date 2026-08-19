@@ -1,5 +1,12 @@
-import { DATASET } from "@/lib/mock/dataset";
-import type { Campaign, CampaignStatus, CreativeDailyInsight, DailyInsight, Objective } from "@/lib/types";
+import type {
+  AdAccount,
+  Brand,
+  Campaign,
+  CampaignStatus,
+  CreativeDailyInsight,
+  DailyInsight,
+  Objective,
+} from "@/lib/types";
 
 export interface CampaignFilters {
   accountId: string;
@@ -9,8 +16,8 @@ export interface CampaignFilters {
   campaignId: string;
 }
 
-export function getFilteredCampaigns(filters: CampaignFilters): Campaign[] {
-  return DATASET.campaigns.filter((c) => {
+export function getFilteredCampaigns(campaigns: Campaign[], filters: CampaignFilters): Campaign[] {
+  return campaigns.filter((c) => {
     if (filters.accountId !== "all" && c.accountId !== filters.accountId) return false;
     if (filters.brandId !== "all" && c.brandId !== filters.brandId) return false;
     if (filters.objective !== "all" && c.objective !== filters.objective) return false;
@@ -22,30 +29,30 @@ export function getFilteredCampaigns(filters: CampaignFilters): Campaign[] {
 
 export function getInsightsForCampaigns(
   campaigns: Campaign[],
+  dailyInsights: DailyInsight[],
   dateStart: string,
   dateEnd: string
 ): DailyInsight[] {
   const ids = new Set(campaigns.map((c) => c.id));
-  return DATASET.dailyInsights.filter(
-    (row) => ids.has(row.campaignId) && row.date >= dateStart && row.date <= dateEnd
-  );
+  return dailyInsights.filter((row) => ids.has(row.campaignId) && row.date >= dateStart && row.date <= dateEnd);
 }
 
 export function getCreativeInsightsForCampaigns(
   campaigns: Campaign[],
+  creativeDailyInsights: CreativeDailyInsight[],
   dateStart: string,
   dateEnd: string
 ): CreativeDailyInsight[] {
   const ids = new Set(campaigns.map((c) => c.id));
-  return DATASET.creativeDailyInsights.filter(
+  return creativeDailyInsights.filter(
     (row) => ids.has(row.campaignId) && row.date >= dateStart && row.date <= dateEnd
   );
 }
 
-export function getBrandById(id: string) {
-  return DATASET.brands.find((b) => b.id === id);
+export function getBrandById(brands: Brand[], id: string) {
+  return brands.find((b) => b.id === id);
 }
 
-export function getAccountById(id: string) {
-  return DATASET.accounts.find((a) => a.id === id);
+export function getAccountById(accounts: AdAccount[], id: string) {
+  return accounts.find((a) => a.id === id);
 }

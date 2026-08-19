@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Wallet, Eye, ScanEye, Target, Coins, MousePointerClick, Percent, TrendingUp, Gauge } from "lucide-react";
+import { Wallet, Eye, ScanEye, Target, Coins, MousePointerClick, Percent, TrendingUp, Gauge, Repeat } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
 import { getFilteredCampaigns, getInsightsForCampaigns, getBrandById } from "@/lib/selectors";
 import {
@@ -10,23 +10,28 @@ import {
   calcCpc,
   calcCpm,
   calcCtr,
+  calcFrequency,
+  FREQUENCY_FATIGUE_THRESHOLD,
   groupInsightsByCampaign,
   pctChange,
   previousPeriod,
   sumTotals,
 } from "@/lib/metrics";
-import { DATASET, RESULT_LABELS } from "@/lib/mock/dataset";
+import { RESULT_LABELS } from "@/lib/mock/dataset";
 import { formatCurrency, formatCurrencyPrecise, formatInteger, formatPercent } from "@/lib/format";
+import { useDashboardData } from "@/store/dashboard-data-context";
 import PageHeader from "@/components/ui/PageHeader";
 import KpiCard from "@/components/ui/KpiCard";
 import ChartCard from "@/components/ui/ChartCard";
 import EmptyState from "@/components/ui/EmptyState";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import StatusPill from "@/components/ui/StatusPill";
 import DataTable, { type DataTableColumn } from "@/components/ui/DataTable";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import ResultsBarChart from "@/components/charts/ResultsBarChart";
 import SpendVsResultsChart from "@/components/charts/SpendVsResultsChart";
 import BrandComparisonChart from "@/components/charts/BrandComparisonChart";
+import ConversionFunnelChart from "@/components/charts/ConversionFunnelChart";
 import Link from "next/link";
 
 interface TopCampaignRow {
@@ -42,17 +47,18 @@ interface TopCampaignRow {
 
 export default function ResumenEjecutivoPage() {
   const filters = useFiltersStore();
+  const { accounts, brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
 
-  const campaigns = useMemo(() => getFilteredCampaigns(filters), [filters]);
+  const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const insights = useMemo(
-    () => getInsightsForCampaigns(campaigns, filters.dateStart, filters.dateEnd),
-    [campaigns, filters.dateStart, filters.dateEnd]
+    () => getInsightsForCampaigns(campaigns, allInsights, filters.dateStart, filters.dateEnd),
+    [campaigns, allInsights, filters.dateStart, filters.dateEnd]
   );
 
   const prevRange = useMemo(() => previousPeriod(filters.dateStart, filters.dateEnd), [filters.dateStart, filters.dateEnd]);
   const prevInsights = useMemo(
-    () => getInsightsForCampaigns(campaigns, prevRange.start, prevRange.end),
-    [campaigns, prevRange]
+    () => getInsightsForCampaigns(campaigns, allInsights, prevRange.start, prevRange.end),
+    [campaigns, allInsights, prevRange]
   );
 
   const totals = useMemo(() => sumTotals(insights), [insights]);
@@ -63,8 +69,8 @@ export default function ResumenEjecutivoPage() {
   const dailySeries = useMemo(() => buildDailySeries(insights), [insights]);
 
   const brandComparisonData = useMemo(() => {
-    const brandCampaigns = getFilteredCampaigns({ ...filters, brandId: "all", campaignId: "all" });
-    const brandInsights = getInsightsForCampaigns(brandCampaigns, filters.dateStart, filters.dateEnd);
+    const brandCampaigns = getFilteredCampaigns(allCampaigns, { ...filters, brandId: "all", campaignId: "all" });
+    const brandInsights = getInsightsForCampaigns(brandCampaigns, allInsights, filters.dateStart, filters.dateEnd);
     const byBrand = new Map<string, number>();
     const campaignToBrand = new Map(brandCampaigns.map((c) => [c.id, c.brandId]));
     for (const row of brandInsights) {
@@ -74,21 +80,21 @@ export default function ResumenEjecutivoPage() {
     }
     return [...byBrand.entries()]
       .map(([brandId, value]) => {
-        const brand = getBrandById(brandId);
+        const brand = getBrandById(brands, brandId);
         return { name: brand?.name ?? brandId, value, color: brand?.color ?? "#4c8cff" };
       })
       .sort((a, b) => b.value - a.value);
-  }, [filters]);
+  }, [allCampaigns, allInsights, brands, filters]);
 
   const topCampaigns: TopCampaignRow[] = useMemo(() => {
     const byCampaign = groupInsightsByCampaign(insights);
     return campaigns
       .map((c) => {
-        const t = byCampaign.get(c.id) ?? { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0 };
+        const t = byCampaign.get(c.id) ?? { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0, landingPageViews: 0 };
         return {
           id: c.id,
           name: c.name,
-          brandName: getBrandById(c.brandId)?.name ?? "—",
+          brandName: getBrandById(brands, c.brandId)?.name ?? "—",
           status: c.status,
           spend: t.spend,
           results: t.results,
@@ -98,7 +104,7 @@ export default function ResumenEjecutivoPage() {
       })
       .sort((a, b) => b.spend - a.spend)
       .slice(0, 8);
-  }, [campaigns, insights]);
+  }, [campaigns, insights, brands]);
 
   const columns: DataTableColumn<TopCampaignRow>[] = [
     { key: "name", header: "Campaña", render: (r) => <span className="font-semibold">{r.name}</span> },
@@ -132,6 +138,7 @@ export default function ResumenEjecutivoPage() {
     return (
       <div>
         <PageHeader title="Resumen ejecutivo" description="Visión general del rendimiento de tus campañas de Meta." />
+        {error && <ErrorBanner message={error} />}
         <EmptyState />
       </div>
     );
@@ -141,8 +148,9 @@ export default function ResumenEjecutivoPage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Resumen ejecutivo"
-        description={`Rendimiento agregado de ${campaigns.length} campaña${campaigns.length === 1 ? "" : "s"} de ${DATASET.accounts.length} cuentas publicitarias.`}
+        description={`Rendimiento agregado de ${campaigns.length} campaña${campaigns.length === 1 ? "" : "s"} de ${accounts.length} cuenta${accounts.length === 1 ? "" : "s"} publicitaria${accounts.length === 1 ? "" : "s"}.`}
       />
+      {error && <ErrorBanner message={error} />}
 
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
         <KpiCard label="Inversión" value={formatCurrency(totals.spend)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />
@@ -158,7 +166,7 @@ export default function ResumenEjecutivoPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
         <KpiCard label="Clics" value={formatInteger(totals.clicks)} deltaPct={pctChange(totals.clicks, prevTotals.clicks)} icon={MousePointerClick} />
         <KpiCard label="CTR" value={formatPercent(calcCtr(totals))} deltaPct={pctChange(calcCtr(totals), calcCtr(prevTotals))} icon={Percent} />
         <KpiCard
@@ -174,6 +182,13 @@ export default function ResumenEjecutivoPage() {
           deltaPct={pctChange(calcCpm(totals), calcCpm(prevTotals))}
           icon={Gauge}
           invertDeltaColor
+        />
+        <KpiCard
+          label="Frecuencia"
+          value={`${calcFrequency(totals).toFixed(1)}x`}
+          deltaPct={pctChange(calcFrequency(totals), calcFrequency(prevTotals))}
+          icon={Repeat}
+          invertDeltaColor={calcFrequency(totals) >= FREQUENCY_FATIGUE_THRESHOLD}
         />
       </div>
 
@@ -191,6 +206,17 @@ export default function ResumenEjecutivoPage() {
           <BrandComparisonChart data={brandComparisonData} />
         </ChartCard>
       </div>
+
+      <ChartCard title="Embudo de conversión" subtitle="De impresiones a resultados, para ver en qué paso se pierden los prospectos">
+        <ConversionFunnelChart
+          stages={[
+            { name: "Impresiones", value: totals.impressions },
+            { name: "Clics", value: totals.clicks },
+            { name: "Vistas de página de destino", value: totals.landingPageViews },
+            { name: resultLabel, value: totals.results },
+          ]}
+        />
+      </ChartCard>
 
       <ChartCard
         title="Campañas con mayor inversión"

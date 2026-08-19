@@ -5,12 +5,19 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Menu, Plug, X } from "lucide-react";
 import { NAV_ITEMS } from "./nav-config";
-import ConnectMetaPanel from "@/components/dashboard/ConnectMetaPanel";
 
-export default function TopBar() {
+export type MetaConnectionStatus = "not_configured" | "disconnected" | "connected";
+
+const STATUS_META: Record<MetaConnectionStatus, { label: string; className: string }> = {
+  not_configured: { label: "Faltan credenciales de Meta", className: "border-red/30 bg-red/10 text-red" },
+  disconnected: { label: "Datos de ejemplo · Meta sin conectar", className: "border-yellow/30 bg-yellow/10 text-yellow" },
+  connected: { label: "Conectado a Meta Ads", className: "border-green/30 bg-green/10 text-green" },
+};
+
+export default function TopBar({ connectionStatus }: { connectionStatus: MetaConnectionStatus }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [connectOpen, setConnectOpen] = useState(false);
+  const status = STATUS_META[connectionStatus];
 
   return (
     <>
@@ -35,17 +42,16 @@ export default function TopBar() {
         </div>
 
         <div className="ml-auto flex items-center gap-2.5">
-          <span className="hidden items-center gap-1.5 rounded-full border border-yellow/30 bg-yellow/10 px-3 py-1.5 text-[11px] font-bold text-yellow sm:inline-flex">
-            Datos de ejemplo · Meta sin conectar
+          <span className={`hidden items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold sm:inline-flex ${status.className}`}>
+            {status.label}
           </span>
-          <button
-            type="button"
-            onClick={() => setConnectOpen(true)}
+          <Link
+            href="/conexiones"
             className="flex items-center gap-1.5 whitespace-nowrap rounded-[10px] border border-accent bg-accent px-3 py-2 text-xs font-bold text-white transition hover:bg-accent-2"
           >
             <Plug size={14} />
-            Conectar cuenta de Meta
-          </button>
+            {connectionStatus === "connected" ? "Ver conexión" : "Conectar cuenta de Meta"}
+          </Link>
         </div>
       </header>
 
@@ -89,8 +95,6 @@ export default function TopBar() {
           </div>
         </div>
       )}
-
-      <ConnectMetaPanel open={connectOpen} onClose={() => setConnectOpen(false)} />
     </>
   );
 }

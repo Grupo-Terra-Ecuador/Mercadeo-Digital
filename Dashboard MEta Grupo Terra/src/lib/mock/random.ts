@@ -25,3 +25,20 @@ export function rangeFloat(rng: () => number, min: number, max: number): number 
 export function pick<T>(rng: () => number, items: readonly T[]): T {
   return items[Math.floor(rng() * items.length)];
 }
+
+/**
+ * Fisher-Yates determinista. A diferencia de `array.sort(() => rng() - 0.5)`,
+ * consume siempre exactamente `items.length - 1` llamadas a rng() —
+ * `sort()` con un comparador aleatorio invoca al comparador un número de
+ * veces que depende del motor JS (Node/V8 del servidor vs. Chromium del
+ * navegador pueden diferir), lo que desincroniza el generador y produce
+ * errores de hidratación en Next.js.
+ */
+export function shuffle<T>(rng: () => number, items: readonly T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}

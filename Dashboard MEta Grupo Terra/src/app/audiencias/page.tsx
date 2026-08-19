@@ -5,12 +5,13 @@ import { Cake, MonitorSmartphone, Rows3, Users } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
 import { getFilteredCampaigns, getInsightsForCampaigns } from "@/lib/selectors";
 import { groupInsightsByCampaign } from "@/lib/metrics";
-import { DATASET } from "@/lib/mock/dataset";
 import { formatCurrency, formatPercent } from "@/lib/format";
+import { useDashboardData } from "@/store/dashboard-data-context";
 import type { AudienceDimension } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
 import ChartCard from "@/components/ui/ChartCard";
 import EmptyState from "@/components/ui/EmptyState";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import DonutBreakdown from "@/components/charts/DonutBreakdown";
 
 const DIMENSIONS: Array<{ key: AudienceDimension; title: string; subtitle: string; icon: typeof Users }> = [
@@ -22,11 +23,18 @@ const DIMENSIONS: Array<{ key: AudienceDimension; title: string; subtitle: strin
 
 export default function AudienciasPage() {
   const filters = useFiltersStore();
+  const {
+    campaigns: allCampaigns,
+    dailyInsights: allInsights,
+    audienceShares: allAudienceShares,
+    isMock,
+    error,
+  } = useDashboardData();
 
-  const campaigns = useMemo(() => getFilteredCampaigns(filters), [filters]);
+  const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const insights = useMemo(
-    () => getInsightsForCampaigns(campaigns, filters.dateStart, filters.dateEnd),
-    [campaigns, filters.dateStart, filters.dateEnd]
+    () => getInsightsForCampaigns(campaigns, allInsights, filters.dateStart, filters.dateEnd),
+    [campaigns, allInsights, filters.dateStart, filters.dateEnd]
   );
   const totalsByCampaign = useMemo(() => groupInsightsByCampaign(insights), [insights]);
 
@@ -41,7 +49,7 @@ export default function AudienciasPage() {
 
     for (const dimension of Object.keys(result) as AudienceDimension[]) {
       const bySegment = new Map<string, number>();
-      for (const row of DATASET.audienceShares) {
+      for (const row of allAudienceShares) {
         if (row.dimension !== dimension || !campaignIds.has(row.campaignId)) continue;
         const totals = totalsByCampaign.get(row.campaignId);
         if (!totals) continue;
@@ -53,12 +61,13 @@ export default function AudienciasPage() {
         .sort((a, b) => b.share - a.share);
     }
     return result;
-  }, [campaigns, totalsByCampaign]);
+  }, [campaigns, totalsByCampaign, allAudienceShares]);
 
   if (campaigns.length === 0) {
     return (
       <div>
         <PageHeader title="Audiencias" description="Composición de la audiencia que recibió tus anuncios." />
+        {error && <ErrorBanner message={error} />}
         <EmptyState />
       </div>
     );
@@ -70,6 +79,8 @@ export default function AudienciasPage() {
         title="Audiencias"
         description="Composición de la audiencia que recibió tus anuncios, estimada a partir de la inversión distribuida del período seleccionado."
       />
+
+      {error && <ErrorBanner message={error} />}
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         {DIMENSIONS.map(({ key, title, icon: Icon }) => {
@@ -101,8 +112,10 @@ export default function AudienciasPage() {
         <p className="text-[12.5px] leading-relaxed text-muted">
           La inversión total del período (
           {formatCurrency(insights.reduce((sum, r) => sum + r.spend, 0))}) se distribuye entre los segmentos de cada
-          dimensión según la proporción histórica de cada campaña. Al conectar tu cuenta real de Meta, estos datos se
-          reemplazan por el desglose exacto que entrega la API de Meta Ads.
+          dimensión según la proporción real que reporta Meta para cada campaña.{" "}
+          {isMock
+            ? "Estos son datos de ejemplo — al conectar tu cuenta real de Meta se reemplazan por el desglose real de tus campañas."
+            : "\"Ubicación del anuncio\" agrupa por plataforma (Facebook, Instagram, Messenger, Audience Network); Meta ofrece un desglose aún más fino por posición específica dentro de cada una si lo necesitas más adelante."}
         </p>
       </ChartCard>
     </div>

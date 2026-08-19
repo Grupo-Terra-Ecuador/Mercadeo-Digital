@@ -5,12 +5,13 @@ import { GalleryHorizontal, Image as ImageIcon, LayoutGrid, Video, type LucideIc
 import { useFiltersStore } from "@/store/filters-store";
 import { getCreativeInsightsForCampaigns, getFilteredCampaigns } from "@/lib/selectors";
 import { calcCostPerResult, calcCtr } from "@/lib/metrics";
-import { DATASET } from "@/lib/mock/dataset";
 import { formatCurrency, formatCurrencyPrecise, formatInteger, formatPercent } from "@/lib/format";
-import type { CreativeFormat } from "@/lib/types";
+import { useDashboardData } from "@/store/dashboard-data-context";
+import type { CreativeFormat, QualityRanking } from "@/lib/types";
 import PageHeader from "@/components/ui/PageHeader";
 import ChartCard from "@/components/ui/ChartCard";
 import EmptyState from "@/components/ui/EmptyState";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import BrandComparisonChart from "@/components/charts/BrandComparisonChart";
 
 const FORMAT_META: Record<CreativeFormat, { label: string; icon: LucideIcon; color: string }> = {
@@ -20,12 +21,23 @@ const FORMAT_META: Record<CreativeFormat, { label: string; icon: LucideIcon; col
   collection: { label: "Colección", icon: LayoutGrid, color: "#f5b849" },
 };
 
+const RANKING_META: Record<QualityRanking, { label: string; color: string }> = {
+  above_average: { label: "Sobre el promedio", color: "#22c55e" },
+  average: { label: "Promedio", color: "#93a0b8" },
+  below_average: { label: "Bajo el promedio", color: "#f0475b" },
+  unknown: { label: "Sin datos suficientes", color: "#64708a" },
+};
+
 interface CreativeRow {
   id: string;
   headline: string;
   campaignName: string;
   format: CreativeFormat;
   swatch: string;
+  thumbnailUrl?: string;
+  qualityRanking: QualityRanking;
+  engagementRanking: QualityRanking;
+  conversionRanking: QualityRanking;
   spend: number;
   impressions: number;
   clicks: number;
@@ -36,12 +48,13 @@ interface CreativeRow {
 
 export default function CreativosPage() {
   const filters = useFiltersStore();
+  const { campaigns: allCampaigns, creatives: allCreatives, creativeDailyInsights: allCreativeInsights, error } = useDashboardData();
 
-  const campaigns = useMemo(() => getFilteredCampaigns(filters), [filters]);
+  const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const campaignNameById = useMemo(() => new Map(campaigns.map((c) => [c.id, c.name])), [campaigns]);
   const creativeInsights = useMemo(
-    () => getCreativeInsightsForCampaigns(campaigns, filters.dateStart, filters.dateEnd),
-    [campaigns, filters.dateStart, filters.dateEnd]
+    () => getCreativeInsightsForCampaigns(campaigns, allCreativeInsights, filters.dateStart, filters.dateEnd),
+    [campaigns, allCreativeInsights, filters.dateStart, filters.dateEnd]
   );
 
   const rows: CreativeRow[] = useMemo(() => {
@@ -56,7 +69,7 @@ export default function CreativosPage() {
     }
 
     const campaignIds = new Set(campaigns.map((c) => c.id));
-    return DATASET.creatives
+    return allCreatives
       .filter((cr) => campaignIds.has(cr.campaignId))
       .map((cr) => {
         const t = totalsByCreative.get(cr.id) ?? { spend: 0, impressions: 0, clicks: 0, results: 0 };
@@ -66,16 +79,20 @@ export default function CreativosPage() {
           campaignName: campaignNameById.get(cr.campaignId) ?? "—",
           format: cr.format,
           swatch: cr.swatch,
+          thumbnailUrl: cr.thumbnailUrl,
+          qualityRanking: cr.qualityRanking ?? "unknown",
+          engagementRanking: cr.engagementRanking ?? "unknown",
+          conversionRanking: cr.conversionRanking ?? "unknown",
           spend: t.spend,
           impressions: t.impressions,
           clicks: t.clicks,
           results: t.results,
-          ctr: calcCtr({ spend: t.spend, reach: 0, impressions: t.impressions, clicks: t.clicks, results: t.results }),
-          costPerResult: calcCostPerResult({ spend: t.spend, reach: 0, impressions: t.impressions, clicks: t.clicks, results: t.results }),
+          ctr: calcCtr({ spend: t.spend, reach: 0, impressions: t.impressions, clicks: t.clicks, results: t.results, landingPageViews: 0 }),
+          costPerResult: calcCostPerResult({ spend: t.spend, reach: 0, impressions: t.impressions, clicks: t.clicks, results: t.results, landingPageViews: 0 }),
         };
       })
       .sort((a, b) => b.spend - a.spend);
-  }, [campaigns, campaignNameById, creativeInsights]);
+  }, [campaigns, campaignNameById, creativeInsights, allCreatives]);
 
   const formatChartData = useMemo(() => {
     const byFormat = new Map<CreativeFormat, number>();
@@ -91,6 +108,8 @@ export default function CreativosPage() {
     <div className="flex flex-col gap-5">
       <PageHeader title="Creativos" description="Desempeño de cada pieza creativa (imagen, video, carrusel o colección) usada en tus anuncios." />
 
+      {error && <ErrorBanner message={error} />}
+
       {rows.length === 0 ? (
         <EmptyState />
       ) : (
@@ -105,12 +124,21 @@ export default function CreativosPage() {
               const Icon = meta.icon;
               return (
                 <div key={row.id} className="rounded-[16px] border border-border bg-surface p-4 shadow-[var(--shadow-card)]">
-                  <div
-                    className="mb-3 flex h-24 items-center justify-center rounded-[12px] text-3xl"
-                    style={{ background: `${row.swatch}22`, color: row.swatch }}
-                  >
-                    <Icon size={30} />
-                  </div>
+                  {row.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- miniatura viene de un CDN externo de Meta con subdominios variables
+                    <img
+                      src={row.thumbnailUrl}
+                      alt={row.headline}
+                      className="mb-3 h-24 w-full rounded-[12px] object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="mb-3 flex h-24 items-center justify-center rounded-[12px] text-3xl"
+                      style={{ background: `${row.swatch}22`, color: row.swatch }}
+                    >
+                      <Icon size={30} />
+                    </div>
+                  )}
                   <span
                     className="mb-2 inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold"
                     style={{ borderColor: `${meta.color}4d`, color: meta.color, background: `${meta.color}1a` }}

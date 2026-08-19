@@ -3,8 +3,9 @@
 import { useMemo } from "react";
 import { RotateCcw } from "lucide-react";
 import { useFiltersStore, DEFAULT_RANGE_START, DEFAULT_RANGE_END } from "@/store/filters-store";
-import { DATASET, OBJECTIVE_LABELS, STATUS_LABELS, isoDateOffset, ANCHOR_DATE } from "@/lib/mock/dataset";
+import { OBJECTIVE_LABELS, STATUS_LABELS, isoDateOffset } from "@/lib/mock/dataset";
 import { getFilteredCampaigns } from "@/lib/selectors";
+import { useDashboardData } from "@/store/dashboard-data-context";
 
 const PRESETS = [
   { label: "7 días", days: 7 },
@@ -14,22 +15,27 @@ const PRESETS = [
 
 export default function FilterBar() {
   const filters = useFiltersStore();
+  const { accounts, brands, campaigns } = useDashboardData();
+
+  // Se calcula en cada render (no en un efecto) para no encadenar renders;
+  // el único riesgo es un aviso de hidratación inofensivo justo a medianoche.
+  const maxDate = new Date().toISOString().slice(0, 10);
 
   const brandOptions = useMemo(
-    () => DATASET.brands.filter((b) => filters.accountId === "all" || b.accountId === filters.accountId),
-    [filters.accountId]
+    () => brands.filter((b) => filters.accountId === "all" || b.accountId === filters.accountId),
+    [brands, filters.accountId]
   );
 
   const campaignOptions = useMemo(
     () =>
-      getFilteredCampaigns({
+      getFilteredCampaigns(campaigns, {
         accountId: filters.accountId,
         brandId: filters.brandId,
         objective: filters.objective,
         status: filters.status,
         campaignId: "all",
       }).sort((a, b) => a.name.localeCompare(b.name)),
-    [filters.accountId, filters.brandId, filters.objective, filters.status]
+    [campaigns, filters.accountId, filters.brandId, filters.objective, filters.status]
   );
 
   const isDefault =
@@ -58,7 +64,7 @@ export default function FilterBar() {
             type="date"
             value={filters.dateEnd}
             min={filters.dateStart}
-            max={ANCHOR_DATE}
+            max={maxDate}
             onChange={(e) => filters.setDateRange(filters.dateStart, e.target.value)}
             className="h-9 rounded-[10px] border border-border-2 bg-surface-2 px-2.5 text-xs font-semibold text-text outline-none focus:border-accent"
           />
@@ -68,7 +74,7 @@ export default function FilterBar() {
             <button
               key={preset.label}
               type="button"
-              onClick={() => filters.setDateRange(isoDateOffset(ANCHOR_DATE, -(preset.days - 1)), ANCHOR_DATE)}
+              onClick={() => filters.setDateRange(isoDateOffset(maxDate, -(preset.days - 1)), maxDate)}
               className="h-9 rounded-[10px] border border-border-2 bg-surface-2 px-2.5 text-[11px] font-bold text-muted transition hover:border-accent hover:text-text"
             >
               {preset.label}
@@ -83,7 +89,7 @@ export default function FilterBar() {
             className="h-9 rounded-[10px] border border-border-2 bg-surface-2 px-2.5 text-xs font-semibold text-text outline-none focus:border-accent"
           >
             <option value="all">Todas las cuentas</option>
-            {DATASET.accounts.map((a) => (
+            {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.name}
               </option>

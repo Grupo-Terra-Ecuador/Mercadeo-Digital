@@ -1,5 +1,7 @@
 import type { DailyInsight, MetricTotals } from "@/lib/types";
 
+const EMPTY_TOTALS: MetricTotals = { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0, landingPageViews: 0 };
+
 export function sumTotals(insights: DailyInsight[]): MetricTotals {
   return insights.reduce<MetricTotals>(
     (acc, row) => ({
@@ -8,8 +10,9 @@ export function sumTotals(insights: DailyInsight[]): MetricTotals {
       impressions: acc.impressions + row.impressions,
       clicks: acc.clicks + row.clicks,
       results: acc.results + row.results,
+      landingPageViews: acc.landingPageViews + row.landingPageViews,
     }),
-    { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0 }
+    { ...EMPTY_TOTALS }
   );
 }
 
@@ -28,6 +31,14 @@ export function calcCpm(totals: MetricTotals): number {
 export function calcCostPerResult(totals: MetricTotals): number {
   return totals.results > 0 ? totals.spend / totals.results : 0;
 }
+
+/** Frecuencia = impresiones / alcance: cuántas veces en promedio vio cada persona el anuncio. */
+export function calcFrequency(totals: MetricTotals): number {
+  return totals.reach > 0 ? totals.impressions / totals.reach : 0;
+}
+
+/** A partir de esta frecuencia se considera que el público empieza a "cansarse" del anuncio. */
+export const FREQUENCY_FATIGUE_THRESHOLD = 3.5;
 
 export function pctChange(current: number, previous: number): number {
   if (previous === 0) return current === 0 ? 0 : 100;
@@ -65,12 +76,13 @@ export function enumerateDates(start: string, end: string): string[] {
 export function groupInsightsByCampaign(insights: DailyInsight[]): Map<string, MetricTotals> {
   const map = new Map<string, MetricTotals>();
   for (const row of insights) {
-    const acc = map.get(row.campaignId) ?? { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0 };
+    const acc = map.get(row.campaignId) ?? { ...EMPTY_TOTALS };
     acc.spend += row.spend;
     acc.reach += row.reach;
     acc.impressions += row.impressions;
     acc.clicks += row.clicks;
     acc.results += row.results;
+    acc.landingPageViews += row.landingPageViews;
     map.set(row.campaignId, acc);
   }
   return map;

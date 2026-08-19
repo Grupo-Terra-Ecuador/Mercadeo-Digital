@@ -4,11 +4,12 @@ import { useMemo } from "react";
 import { useFiltersStore } from "@/store/filters-store";
 import { getAccountById, getFilteredCampaigns, getInsightsForCampaigns } from "@/lib/selectors";
 import { calcCostPerResult, calcCtr, groupInsightsByCampaign } from "@/lib/metrics";
-import { DATASET } from "@/lib/mock/dataset";
 import { formatCurrency, formatCurrencyPrecise, formatInteger, formatPercent } from "@/lib/format";
+import { useDashboardData } from "@/store/dashboard-data-context";
 import PageHeader from "@/components/ui/PageHeader";
 import ChartCard from "@/components/ui/ChartCard";
 import EmptyState from "@/components/ui/EmptyState";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import DataTable, { type DataTableColumn } from "@/components/ui/DataTable";
 import BrandComparisonChart from "@/components/charts/BrandComparisonChart";
 import DonutBreakdown from "@/components/charts/DonutBreakdown";
@@ -29,11 +30,12 @@ interface BrandRow {
 
 export default function MarcasPage() {
   const filters = useFiltersStore();
+  const { accounts, brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
 
-  const campaigns = useMemo(() => getFilteredCampaigns(filters), [filters]);
+  const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const insights = useMemo(
-    () => getInsightsForCampaigns(campaigns, filters.dateStart, filters.dateEnd),
-    [campaigns, filters.dateStart, filters.dateEnd]
+    () => getInsightsForCampaigns(campaigns, allInsights, filters.dateStart, filters.dateEnd),
+    [campaigns, allInsights, filters.dateStart, filters.dateEnd]
   );
 
   const rows: BrandRow[] = useMemo(() => {
@@ -43,10 +45,10 @@ export default function MarcasPage() {
 
     const result: BrandRow[] = [];
     for (const brandId of brandIds) {
-      const brand = DATASET.brands.find((b) => b.id === brandId);
+      const brand = brands.find((b) => b.id === brandId);
       if (!brand) continue;
       const brandCampaigns = campaigns.filter((c) => c.brandId === brandId);
-      const totals = { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0 };
+      const totals = { spend: 0, reach: 0, impressions: 0, clicks: 0, results: 0, landingPageViews: 0 };
       for (const c of brandCampaigns) {
         const t = byCampaign.get(c.id);
         if (!t) continue;
@@ -59,7 +61,7 @@ export default function MarcasPage() {
         id: brand.id,
         name: brand.name,
         color: brand.color,
-        accountName: getAccountById(brand.accountId)?.name ?? "—",
+        accountName: getAccountById(accounts, brand.accountId)?.name ?? "—",
         totalCampaigns: brandCampaigns.length,
         activeCampaigns: brandCampaigns.filter((c) => c.status === "ACTIVE").length,
         spend: totals.spend,
@@ -70,7 +72,7 @@ export default function MarcasPage() {
       });
     }
     return result.sort((a, b) => b.spend - a.spend);
-  }, [campaigns, insights]);
+  }, [campaigns, insights, brands, accounts]);
 
   const chartData = useMemo(() => rows.map((r) => ({ name: r.name, value: r.spend, color: r.color })), [rows]);
   const shareData = useMemo(() => rows.map((r) => ({ segment: r.name, share: r.share })), [rows]);
@@ -123,6 +125,8 @@ export default function MarcasPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title="Marcas" description="Rendimiento agregado por marca dentro de las cuentas publicitarias conectadas." />
+
+      {error && <ErrorBanner message={error} />}
 
       {rows.length === 0 ? (
         <EmptyState />
