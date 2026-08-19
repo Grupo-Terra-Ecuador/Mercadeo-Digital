@@ -216,6 +216,12 @@ export default function ResumenEjecutivoPage() {
             { name: resultLabel, value: totals.results },
           ]}
         />
+        {totals.landingPageViews === 0 && totals.clicks > 0 && (
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-2">
+            &ldquo;Vistas de página de destino&rdquo; está en 0 porque estas campañas no dirigen a una página web
+            externa (por ejemplo, campañas de mensajes o interacción) — es normal en ese caso, no un error.
+          </p>
+        )}
       </ChartCard>
 
       <ChartCard

@@ -154,6 +154,12 @@ export default function CreativosPage() {
                     <Metric label="Resultados" value={formatInteger(row.results)} />
                     <Metric label="Costo/Result." value={formatCurrencyPrecise(row.costPerResult)} />
                   </div>
+
+                  <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">
+                    <RankingRow label="Calidad" ranking={row.qualityRanking} />
+                    <RankingRow label="Interacción" ranking={row.engagementRanking} />
+                    <RankingRow label="Conversión" ranking={row.conversionRanking} />
+                  </div>
                 </div>
               );
             })}
@@ -169,6 +175,19 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div>
       <div className="text-[9.5px] font-bold uppercase tracking-wide text-muted-2">{label}</div>
       <div className="text-[12.5px] font-bold text-text">{value}</div>
+    </div>
+  );
+}
+
+function RankingRow({ label, ranking }: { label: string; ranking: QualityRanking }) {
+  const meta = RANKING_META[ranking];
+  return (
+    <div className="flex items-center justify-between text-[10.5px]">
+      <span className="font-semibold text-muted-2">{label}</span>
+      <span className="inline-flex items-center gap-1 font-bold" style={{ color: meta.color }}>
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
+        {meta.label}
+      </span>
     </div>
   );
 }
