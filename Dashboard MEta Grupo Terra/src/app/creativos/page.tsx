@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { GalleryHorizontal, Image as ImageIcon, LayoutGrid, Video, type LucideIcon } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getCreativeInsightsForCampaigns, getFilteredCampaigns } from "@/lib/selectors";
+import { getAccountById, getCreativeInsightsForCampaigns, getFilteredCampaigns, resolveCurrency } from "@/lib/selectors";
 import { calcCostPerResult, calcCtr } from "@/lib/metrics";
 import { formatCurrency, formatCurrencyPrecise, formatInteger, formatPercent } from "@/lib/format";
 import { useDashboardData } from "@/store/dashboard-data-context";
@@ -35,6 +35,7 @@ interface CreativeRow {
   format: CreativeFormat;
   swatch: string;
   thumbnailUrl?: string;
+  currency: string;
   qualityRanking: QualityRanking;
   engagementRanking: QualityRanking;
   conversionRanking: QualityRanking;
@@ -48,10 +49,11 @@ interface CreativeRow {
 
 export default function CreativosPage() {
   const filters = useFiltersStore();
-  const { campaigns: allCampaigns, creatives: allCreatives, creativeDailyInsights: allCreativeInsights, error } = useDashboardData();
+  const { accounts, campaigns: allCampaigns, creatives: allCreatives, creativeDailyInsights: allCreativeInsights, error } = useDashboardData();
 
   const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
-  const campaignNameById = useMemo(() => new Map(campaigns.map((c) => [c.id, c.name])), [campaigns]);
+  const campaignById = useMemo(() => new Map(campaigns.map((c) => [c.id, c])), [campaigns]);
+  const { currency, mixed: mixedCurrency } = useMemo(() => resolveCurrency(accounts, campaigns), [accounts, campaigns]);
   const creativeInsights = useMemo(
     () => getCreativeInsightsForCampaigns(campaigns, allCreativeInsights, filters.dateStart, filters.dateEnd),
     [campaigns, allCreativeInsights, filters.dateStart, filters.dateEnd]
@@ -73,13 +75,15 @@ export default function CreativosPage() {
       .filter((cr) => campaignIds.has(cr.campaignId))
       .map((cr) => {
         const t = totalsByCreative.get(cr.id) ?? { spend: 0, impressions: 0, clicks: 0, results: 0 };
+        const campaign = campaignById.get(cr.campaignId);
         return {
           id: cr.id,
           headline: cr.headline,
-          campaignName: campaignNameById.get(cr.campaignId) ?? "—",
+          campaignName: campaign?.name ?? "—",
           format: cr.format,
           swatch: cr.swatch,
           thumbnailUrl: cr.thumbnailUrl,
+          currency: (campaign && getAccountById(accounts, campaign.accountId)?.currency) ?? "USD",
           qualityRanking: cr.qualityRanking ?? "unknown",
           engagementRanking: cr.engagementRanking ?? "unknown",
           conversionRanking: cr.conversionRanking ?? "unknown",
@@ -92,7 +96,7 @@ export default function CreativosPage() {
         };
       })
       .sort((a, b) => b.spend - a.spend);
-  }, [campaigns, campaignNameById, creativeInsights, allCreatives]);
+  }, [campaigns, campaignById, creativeInsights, allCreatives, accounts]);
 
   const formatChartData = useMemo(() => {
     const byFormat = new Map<CreativeFormat, number>();
@@ -109,13 +113,19 @@ export default function CreativosPage() {
       <PageHeader title="Creativos" description="Desempeño de cada pieza creativa (imagen, video, carrusel o colección) usada en tus anuncios." />
 
       {error && <ErrorBanner message={error} />}
+      {mixedCurrency && (
+        <ErrorBanner
+          tone="warning"
+          message="Estos creativos pertenecen a cuentas con monedas distintas — la inversión mostrada mezcla monedas."
+        />
+      )}
 
       {rows.length === 0 ? (
         <EmptyState />
       ) : (
         <>
           <ChartCard title="Inversión por formato" subtitle="Qué tipo de creativo concentra más presupuesto" className="max-w-xl">
-            <BrandComparisonChart data={formatChartData} />
+            <BrandComparisonChart data={formatChartData} currency={currency} />
           </ChartCard>
 
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -149,10 +159,10 @@ export default function CreativosPage() {
                   <div className="mt-0.5 truncate text-[11px] text-muted-2">{row.campaignName}</div>
 
                   <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-2 border-t border-border pt-3">
-                    <Metric label="Inversión" value={formatCurrency(row.spend)} />
+                    <Metric label="Inversión" value={formatCurrency(row.spend, row.currency)} />
                     <Metric label="CTR" value={formatPercent(row.ctr)} />
                     <Metric label="Resultados" value={formatInteger(row.results)} />
-                    <Metric label="Costo/Result." value={formatCurrencyPrecise(row.costPerResult)} />
+                    <Metric label="Costo/Result." value={formatCurrencyPrecise(row.costPerResult, row.currency)} />
                   </div>
 
                   <div className="mt-3 flex flex-col gap-1 border-t border-border pt-3">

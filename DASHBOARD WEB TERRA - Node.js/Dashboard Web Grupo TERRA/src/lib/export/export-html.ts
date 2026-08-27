@@ -12,7 +12,7 @@
 //
 // Requiere el build de produccion (npm run build): en `npm run dev` /export-engine.js
 // todavia no existe, asi que se avisa al usuario en vez de fallar en silencio.
-import { esc } from "../core/format";
+import { esc, dateLabel, parseReportDateToken } from "../core/format";
 import { dashboardStoreApi } from "@/store/dashboard-store";
 import { selectedExportIds } from "../dashboard/export-selection";
 import type { Dataset } from "../core/types";
@@ -84,6 +84,29 @@ function buildNavLinks(ids: string[]): string {
     .join("");
 }
 
+// Bloque de marca (logo + nombre + fecha de procesamiento), congelado: a diferencia de los
+// modulos (clonados desde el DOM ya renderizado por React), este se arma aqui leyendo
+// directamente del store, porque ReportBrandingCard.tsx (sus controles de carga/edicion)
+// nunca se clona hacia el HTML exportado — solo el resultado, en texto/imagen fijos, sin
+// ningun control editable. Si no hay nada configurado, no se incluye ningun bloque.
+function buildBrandingBlock(): string {
+  const { logoDataUrl, brandName, processedDateFrom, processedDateTo } = dashboardStoreApi.getState().branding;
+  if (!logoDataUrl && !brandName && !processedDateFrom && !processedDateTo) return "";
+  const from = processedDateFrom ? dateLabel(parseReportDateToken(processedDateFrom)) : "";
+  const to = processedDateTo ? dateLabel(parseReportDateToken(processedDateTo)) : "";
+  let dateDisplay = "";
+  if (from && to) dateDisplay = `${from} a ${to}`;
+  else if (from) dateDisplay = from;
+  else if (to) dateDisplay = to;
+  return `<div class="card mb-[18px] flex items-center gap-3 rounded-terra border border-border bg-surface p-[18px] shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">${
+    logoDataUrl
+      ? `<img src="${esc(logoDataUrl)}" alt="Logo de la marca" class="h-[168px] w-[168px] shrink-0 object-contain">`
+      : ""
+  }<div>${brandName ? `<div class="text-[15px] font-black text-text">${esc(brandName)}</div>` : ""}${
+    dateDisplay ? `<div class="mt-0.5 text-xs text-muted-2">Fecha de procesamiento: ${esc(dateDisplay)}</div>` : ""
+  }</div></div>`;
+}
+
 function buildDocument({
   css,
   engineSrc,
@@ -129,6 +152,7 @@ function buildDocument({
   <div class="relative z-[1] flex items-start gap-2.5 rounded-[13px] border border-green/25 bg-green/10 p-3 text-[13px] font-bold text-green"><span>OK</span><span>El informe conserva graficas, tablas, escalas, diagnosticos y navegacion entre los modulos seleccionados.</span></div>
   <div class="relative z-[1] mt-3.5 flex flex-wrap items-center gap-2"><button class="rounded-[10px] border border-border-2 px-2.5 py-1.5 text-[11px] font-extrabold text-muted" type="button" data-action="expandModules">Expandir modulos</button><button class="rounded-[10px] border border-border-2 px-2.5 py-1.5 text-[11px] font-extrabold text-muted" type="button" data-action="collapseModules">Contraer modulos</button></div>
 </section>
+${buildBrandingBlock()}
 ${sections}
 </main>
 </div>

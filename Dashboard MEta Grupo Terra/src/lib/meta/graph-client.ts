@@ -1,4 +1,4 @@
-import { getMetaConfig, graphUrl } from "./config";
+import { getAccountAllowlist, getMetaConfig, graphUrl } from "./config";
 
 interface GraphErrorBody {
   error?: { message: string; type?: string; code?: number };
@@ -79,13 +79,16 @@ export async function getAdAccounts(accessToken: string): Promise<MetaAdAccount[
     data: Array<{ id: string; name: string; account_status: number; currency: string; business_name?: string }>;
   }>(url.toString());
 
-  return data.data.map((a) => ({
+  const accounts = data.data.map((a) => ({
     id: a.id,
     name: a.name,
     accountStatus: a.account_status,
     currency: a.currency,
     businessName: a.business_name ?? null,
   }));
+
+  const allowlist = getAccountAllowlist();
+  return allowlist ? accounts.filter((a) => allowlist.has(a.id)) : accounts;
 }
 
 export interface MetaTokenDebugInfo {

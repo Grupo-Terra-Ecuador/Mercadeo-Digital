@@ -91,6 +91,52 @@ const DEFAULT_AI_STATUS: AiStatusInfo = {
   message: 'Estado no verificado todavia. Presiona "Verificar conexion" para comprobarlo.',
 };
 
+// Personalizacion de marca del informe (logo + nombre + fecha de procesamiento): editable
+// solo en el dashboard en vivo (ver ReportBrandingCard.tsx); en el HTML exportado se
+// congela como texto/imagen fijos, sin controles de edicion (ver lib/export/export-html.ts).
+// Se persiste en localStorage (no en el store de Zustand con middleware, para mantener el
+// store 100% sincrono y sin dependencias nuevas) porque es una personalizacion que el
+// usuario configura una vez y espera que se mantenga entre sesiones.
+export interface ReportBrandingState {
+  logoDataUrl: string | null;
+  brandName: string;
+  processedDateFrom: string;
+  processedDateTo: string;
+}
+
+const DEFAULT_BRANDING: ReportBrandingState = { logoDataUrl: null, brandName: "", processedDateFrom: "", processedDateTo: "" };
+const BRANDING_STORAGE_KEY = "terra-dashboard:report-branding";
+
+function readBrandingFromStorage(): ReportBrandingState {
+  if (typeof window === "undefined") return { ...DEFAULT_BRANDING };
+  try {
+    const raw = window.localStorage.getItem(BRANDING_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_BRANDING };
+    const parsed = JSON.parse(raw);
+    return {
+      logoDataUrl: typeof parsed.logoDataUrl === "string" ? parsed.logoDataUrl : null,
+      brandName: typeof parsed.brandName === "string" ? parsed.brandName : "",
+      // `processedDate` (sin rango) es el nombre del campo antiguo: se sigue leyendo por
+      // compatibilidad con lo que ya haya quedado guardado en el navegador del usuario,
+      // usandolo como fecha "desde" si todavia no existe processedDateFrom.
+      processedDateFrom: typeof parsed.processedDateFrom === "string" ? parsed.processedDateFrom : typeof parsed.processedDate === "string" ? parsed.processedDate : "",
+      processedDateTo: typeof parsed.processedDateTo === "string" ? parsed.processedDateTo : "",
+    };
+  } catch {
+    return { ...DEFAULT_BRANDING };
+  }
+}
+
+function writeBrandingToStorage(branding: ReportBrandingState): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(BRANDING_STORAGE_KEY, JSON.stringify(branding));
+  } catch {
+    // Se ignora (por ejemplo, cuota de localStorage excedida por un logo muy pesado): la
+    // personalizacion simplemente no persistira entre sesiones, pero no rompe la app.
+  }
+}
+
 export interface DashboardState {
   files: File[];
   datasets: Dataset[];
@@ -104,6 +150,7 @@ export interface DashboardState {
   processing: boolean;
   google: GoogleState;
   aiStatus: AiStatusInfo;
+  branding: ReportBrandingState;
 
   setSettings: (partial: Partial<Settings>) => void;
   refreshModel: () => void;
@@ -121,6 +168,12 @@ export interface DashboardState {
   processFromGoogle: (propertyId: string, siteUrl: string) => Promise<void>;
 
   checkAiStatus: () => Promise<void>;
+
+  hydrateBranding: () => void;
+  setBrandLogo: (dataUrl: string | null) => void;
+  setBrandName: (name: string) => void;
+  setProcessedDateFrom: (date: string) => void;
+  setProcessedDateTo: (date: string) => void;
 }
 
 // Store "vanilla", sin dependencia de React: es el que deben importar lib/* (charts,
@@ -140,6 +193,10 @@ export const dashboardStoreApi: StoreApi<DashboardState> = createStore<Dashboard
   processing: false,
   google: { ...DEFAULT_GOOGLE_STATE },
   aiStatus: { ...DEFAULT_AI_STATUS },
+  // Arranca en blanco (no lee localStorage aqui: correria tambien en el render del
+  // servidor, donde no existe). El valor real se carga con hydrateBranding() desde un
+  // useEffect de ReportBrandingCard, la unica vez que se monta la app en el navegador.
+  branding: { ...DEFAULT_BRANDING },
 
   setSettings: (partial) => set((s) => ({ settings: { ...s.settings, ...partial } })),
 
@@ -340,4 +397,34 @@ export const dashboardStoreApi: StoreApi<DashboardState> = createStore<Dashboard
     const result = await requestAiStatus();
     set({ aiStatus: { state: result.ready ? "ready" : "unavailable", message: result.message } });
   },
+
+  hydrateBranding: () => set({ branding: readBrandingFromStorage() }),
+
+  setBrandLogo: (dataUrl) =>
+    set((s) => {
+      const branding = { ...s.branding, logoDataUrl: dataUrl };
+      writeBrandingToStorage(branding);
+      return { branding };
+    }),
+
+  setBrandName: (name) =>
+    set((s) => {
+      const branding = { ...s.branding, brandName: name };
+      writeBrandingToStorage(branding);
+      return { branding };
+    }),
+
+  setProcessedDateFrom: (date) =>
+    set((s) => {
+      const branding = { ...s.branding, processedDateFrom: date };
+      writeBrandingToStorage(branding);
+      return { branding };
+    }),
+
+  setProcessedDateTo: (date) =>
+    set((s) => {
+      const branding = { ...s.branding, processedDateTo: date };
+      writeBrandingToStorage(branding);
+      return { branding };
+    }),
 }));

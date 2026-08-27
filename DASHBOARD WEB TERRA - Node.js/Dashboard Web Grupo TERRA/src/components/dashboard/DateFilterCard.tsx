@@ -47,7 +47,7 @@ export default function DateFilterCard() {
   }
 
   return (
-    <div className="card rounded-terra border border-border bg-surface p-[18px] shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+    <div className="mt-4 border-t border-border-2/55 pt-4">
       <div className="cardtitle mb-2.5 flex items-center gap-1.5 text-[13px] font-black text-text">Filtro de fechas responsable</div>
       <div className="settings grid grid-cols-5 gap-2.5 max-[1180px]:grid-cols-2 max-[900px]:grid-cols-1">
         <div className="field">

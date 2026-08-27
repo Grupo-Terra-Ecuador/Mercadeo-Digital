@@ -14,9 +14,10 @@ import { formatCompact, formatCurrencyPrecise, formatDateLong, formatDateShort, 
 interface Props {
   data: Array<{ date: string; spend: number; results: number }>;
   resultLabel: string;
+  currency?: string;
 }
 
-export default function SpendVsResultsChart({ data, resultLabel }: Props) {
+export default function SpendVsResultsChart({ data, resultLabel, currency = "USD" }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <ComposedChart data={data} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
@@ -29,7 +30,7 @@ export default function SpendVsResultsChart({ data, resultLabel }: Props) {
           labelStyle={TOOLTIP_LABEL_STYLE}
           labelFormatter={(label) => formatDateLong(String(label ?? ""))}
           formatter={(value, name) =>
-            name === "Inversión" ? [formatCurrencyPrecise(Number(value ?? 0)), name] : [formatInteger(Number(value ?? 0)), name]
+            name === "Inversión" ? [formatCurrencyPrecise(Number(value ?? 0), currency), name] : [formatInteger(Number(value ?? 0)), name]
           }
         />
         <Bar yAxisId="left" dataKey="results" name={resultLabel} fill={CHART_ACCENT} fillOpacity={0.55} radius={[4, 4, 0, 0]} maxBarSize={20} />

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Coins, Target, TrendingUp, Wallet } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getBrandById, getFilteredCampaigns, getInsightsForCampaigns } from "@/lib/selectors";
+import { getAccountById, getBrandById, getFilteredCampaigns, getInsightsForCampaigns, resolveCurrency } from "@/lib/selectors";
 import {
   calcCostPerResult,
   calcCtr,
@@ -27,6 +27,7 @@ import ComparisonTrendChart from "@/components/charts/ComparisonTrendChart";
 interface BrandCompareRow {
   brandId: string;
   name: string;
+  currency: string;
   currentSpend: number;
   previousSpend: number;
   spendDelta: number;
@@ -37,7 +38,7 @@ interface BrandCompareRow {
 
 export default function ComparativoPage() {
   const filters = useFiltersStore();
-  const { brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
+  const { accounts, brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
 
   const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const prevRange = useMemo(() => previousPeriod(filters.dateStart, filters.dateEnd), [filters.dateStart, filters.dateEnd]);
@@ -53,6 +54,7 @@ export default function ComparativoPage() {
 
   const totals = useMemo(() => sumTotals(insights), [insights]);
   const prevTotals = useMemo(() => sumTotals(prevInsights), [prevInsights]);
+  const { currency, mixed: mixedCurrency } = useMemo(() => resolveCurrency(accounts, campaigns), [accounts, campaigns]);
 
   const resultLabel = filters.objective !== "all" ? RESULT_LABELS[filters.objective] : "Resultados";
 
@@ -113,6 +115,7 @@ export default function ComparativoPage() {
         return {
           brandId,
           name: brand?.name ?? brandId,
+          currency: (brand && getAccountById(accounts, brand.accountId)?.currency) ?? "USD",
           currentSpend,
           previousSpend,
           spendDelta: pctChange(currentSpend, previousSpend),
@@ -122,7 +125,7 @@ export default function ComparativoPage() {
         };
       })
       .sort((a, b) => b.currentSpend - a.currentSpend);
-  }, [campaigns, insights, prevInsights, brands]);
+  }, [campaigns, insights, prevInsights, brands, accounts]);
 
   const columns: DataTableColumn<BrandCompareRow>[] = [
     { key: "name", header: "Marca", sortValue: (r) => r.name, render: (r) => <span className="font-semibold">{r.name}</span> },
@@ -131,14 +134,14 @@ export default function ComparativoPage() {
       header: "Inversión actual",
       align: "right",
       sortValue: (r) => r.currentSpend,
-      render: (r) => formatCurrency(r.currentSpend),
+      render: (r) => formatCurrency(r.currentSpend, r.currency),
     },
     {
       key: "previousSpend",
       header: "Inversión anterior",
       align: "right",
       sortValue: (r) => r.previousSpend,
-      render: (r) => formatCurrency(r.previousSpend),
+      render: (r) => formatCurrency(r.previousSpend, r.currency),
     },
     {
       key: "spendDelta",
@@ -180,13 +183,19 @@ export default function ComparativoPage() {
         description={`Período actual: ${formatDateLong(filters.dateStart)} – ${formatDateLong(filters.dateEnd)}  ·  Período anterior: ${formatDateLong(prevRange.start)} – ${formatDateLong(prevRange.end)}`}
       />
       {error && <ErrorBanner message={error} />}
+      {mixedCurrency && (
+        <ErrorBanner
+          tone="warning"
+          message="Las campañas visibles pertenecen a cuentas con monedas distintas — los totales en dinero no se pueden sumar con precisión. Filtra por Cuenta o Marca para ver una sola moneda a la vez."
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
-        <KpiCard label="Inversión" value={formatCurrency(totals.spend)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />
+        <KpiCard label="Inversión" value={formatCurrency(totals.spend, currency)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />
         <KpiCard label={resultLabel} value={formatInteger(totals.results)} deltaPct={pctChange(totals.results, prevTotals.results)} icon={Target} />
         <KpiCard
           label="Costo por resultado"
-          value={formatCurrencyPrecise(calcCostPerResult(totals))}
+          value={formatCurrencyPrecise(calcCostPerResult(totals), currency)}
           deltaPct={pctChange(calcCostPerResult(totals), calcCostPerResult(prevTotals))}
           icon={Coins}
           invertDeltaColor
@@ -201,7 +210,7 @@ export default function ComparativoPage() {
 
       <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-2">
         <ChartCard title="Inversión: actual vs. anterior" subtitle="Ambos períodos alineados por día relativo (Día 1, Día 2, …)">
-          <ComparisonTrendChart data={spendOverlay} formatter={(v) => formatCurrency(v)} />
+          <ComparisonTrendChart data={spendOverlay} formatter={(v) => formatCurrency(v, currency)} />
         </ChartCard>
         <ChartCard title={`${resultLabel}: actual vs. anterior`} subtitle="Ambos períodos alineados por día relativo">
           <ComparisonTrendChart data={resultsOverlay} formatter={(v) => formatInteger(v)} />

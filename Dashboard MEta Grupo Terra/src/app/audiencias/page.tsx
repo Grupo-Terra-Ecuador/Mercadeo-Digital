@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Cake, MonitorSmartphone, Rows3, Users } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getFilteredCampaigns, getInsightsForCampaigns } from "@/lib/selectors";
+import { getFilteredCampaigns, getInsightsForCampaigns, resolveCurrency } from "@/lib/selectors";
 import { groupInsightsByCampaign } from "@/lib/metrics";
 import { formatCurrency, formatPercent } from "@/lib/format";
 import { useDashboardData } from "@/store/dashboard-data-context";
@@ -24,6 +24,7 @@ const DIMENSIONS: Array<{ key: AudienceDimension; title: string; subtitle: strin
 export default function AudienciasPage() {
   const filters = useFiltersStore();
   const {
+    accounts,
     campaigns: allCampaigns,
     dailyInsights: allInsights,
     audienceShares: allAudienceShares,
@@ -32,6 +33,7 @@ export default function AudienciasPage() {
   } = useDashboardData();
 
   const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
+  const { currency } = useMemo(() => resolveCurrency(accounts, campaigns), [accounts, campaigns]);
   const insights = useMemo(
     () => getInsightsForCampaigns(campaigns, allInsights, filters.dateStart, filters.dateEnd),
     [campaigns, allInsights, filters.dateStart, filters.dateEnd]
@@ -111,7 +113,7 @@ export default function AudienciasPage() {
       <ChartCard title="Nota sobre estos datos" subtitle="Cómo se calculan las audiencias en este panel">
         <p className="text-[12.5px] leading-relaxed text-muted">
           La inversión total del período (
-          {formatCurrency(insights.reduce((sum, r) => sum + r.spend, 0))}) se distribuye entre los segmentos de cada
+          {formatCurrency(insights.reduce((sum, r) => sum + r.spend, 0), currency)}) se distribuye entre los segmentos de cada
           dimensión según la proporción real que reporta Meta para cada campaña.{" "}
           {isMock
             ? "Estos son datos de ejemplo — al conectar tu cuenta real de Meta se reemplazan por el desglose real de tus campañas."

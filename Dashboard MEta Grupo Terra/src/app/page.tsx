@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Wallet, Eye, ScanEye, Target, Coins, MousePointerClick, Percent, TrendingUp, Gauge, Repeat } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getFilteredCampaigns, getInsightsForCampaigns, getBrandById } from "@/lib/selectors";
+import { getFilteredCampaigns, getInsightsForCampaigns, getBrandById, resolveCurrency } from "@/lib/selectors";
 import {
   buildDailySeries,
   calcCostPerResult,
@@ -63,6 +63,8 @@ export default function ResumenEjecutivoPage() {
 
   const totals = useMemo(() => sumTotals(insights), [insights]);
   const prevTotals = useMemo(() => sumTotals(prevInsights), [prevInsights]);
+  const { currency, mixed: mixedCurrency } = useMemo(() => resolveCurrency(accounts, campaigns), [accounts, campaigns]);
+  const visibleAccountCount = useMemo(() => new Set(campaigns.map((c) => c.accountId)).size, [campaigns]);
 
   const resultLabel = filters.objective !== "all" ? RESULT_LABELS[filters.objective] : "Resultados";
 
@@ -115,7 +117,7 @@ export default function ResumenEjecutivoPage() {
       header: "Inversión",
       align: "right",
       sortValue: (r) => r.spend,
-      render: (r) => formatCurrency(r.spend),
+      render: (r) => formatCurrency(r.spend, currency),
     },
     {
       key: "results",
@@ -129,7 +131,7 @@ export default function ResumenEjecutivoPage() {
       header: "Costo/Resultado",
       align: "right",
       sortValue: (r) => r.costPerResult,
-      render: (r) => formatCurrencyPrecise(r.costPerResult),
+      render: (r) => formatCurrencyPrecise(r.costPerResult, currency),
     },
     { key: "ctr", header: "CTR", align: "right", sortValue: (r) => r.ctr, render: (r) => formatPercent(r.ctr) },
   ];
@@ -148,18 +150,24 @@ export default function ResumenEjecutivoPage() {
     <div className="flex flex-col gap-5">
       <PageHeader
         title="Resumen ejecutivo"
-        description={`Rendimiento agregado de ${campaigns.length} campaña${campaigns.length === 1 ? "" : "s"} de ${accounts.length} cuenta${accounts.length === 1 ? "" : "s"} publicitaria${accounts.length === 1 ? "" : "s"}.`}
+        description={`Rendimiento agregado de ${campaigns.length} campaña${campaigns.length === 1 ? "" : "s"} de ${visibleAccountCount} cuenta${visibleAccountCount === 1 ? "" : "s"} publicitaria${visibleAccountCount === 1 ? "" : "s"}.`}
       />
       {error && <ErrorBanner message={error} />}
+      {mixedCurrency && (
+        <ErrorBanner
+          tone="warning"
+          message="Las campañas visibles pertenecen a cuentas con monedas distintas — los totales en dinero no se pueden sumar con precisión. Filtra por Cuenta o Marca para ver una sola moneda a la vez."
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
-        <KpiCard label="Inversión" value={formatCurrency(totals.spend)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />
+        <KpiCard label="Inversión" value={formatCurrency(totals.spend, currency)} deltaPct={pctChange(totals.spend, prevTotals.spend)} icon={Wallet} />
         <KpiCard label="Alcance" value={formatInteger(totals.reach)} deltaPct={pctChange(totals.reach, prevTotals.reach)} icon={Eye} />
         <KpiCard label="Impresiones" value={formatInteger(totals.impressions)} deltaPct={pctChange(totals.impressions, prevTotals.impressions)} icon={ScanEye} />
         <KpiCard label={resultLabel} value={formatInteger(totals.results)} deltaPct={pctChange(totals.results, prevTotals.results)} icon={Target} />
         <KpiCard
           label="Costo por resultado"
-          value={formatCurrencyPrecise(calcCostPerResult(totals))}
+          value={formatCurrencyPrecise(calcCostPerResult(totals), currency)}
           deltaPct={pctChange(calcCostPerResult(totals), calcCostPerResult(prevTotals))}
           icon={Coins}
           invertDeltaColor
@@ -171,14 +179,14 @@ export default function ResumenEjecutivoPage() {
         <KpiCard label="CTR" value={formatPercent(calcCtr(totals))} deltaPct={pctChange(calcCtr(totals), calcCtr(prevTotals))} icon={Percent} />
         <KpiCard
           label="CPC"
-          value={formatCurrencyPrecise(calcCpc(totals))}
+          value={formatCurrencyPrecise(calcCpc(totals), currency)}
           deltaPct={pctChange(calcCpc(totals), calcCpc(prevTotals))}
           icon={TrendingUp}
           invertDeltaColor
         />
         <KpiCard
           label="CPM"
-          value={formatCurrencyPrecise(calcCpm(totals))}
+          value={formatCurrencyPrecise(calcCpm(totals), currency)}
           deltaPct={pctChange(calcCpm(totals), calcCpm(prevTotals))}
           icon={Gauge}
           invertDeltaColor
@@ -194,16 +202,16 @@ export default function ResumenEjecutivoPage() {
 
       <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-2">
         <ChartCard title="Evolución diaria de inversión" subtitle="Gasto en Meta Ads por día en el período seleccionado">
-          <SpendTrendChart data={dailySeries} />
+          <SpendTrendChart data={dailySeries} currency={currency} />
         </ChartCard>
         <ChartCard title={`${resultLabel} por día`} subtitle="Atribución diaria de resultados">
           <ResultsBarChart data={dailySeries} resultLabel={resultLabel} />
         </ChartCard>
         <ChartCard title="Gasto diario vs. resultados" subtitle="Correlación entre inversión y resultados obtenidos">
-          <SpendVsResultsChart data={dailySeries} resultLabel={resultLabel} />
+          <SpendVsResultsChart data={dailySeries} resultLabel={resultLabel} currency={currency} />
         </ChartCard>
         <ChartCard title="Comparativo de inversión por marca" subtitle="Inversión total por marca en el período seleccionado">
-          <BrandComparisonChart data={brandComparisonData} />
+          <BrandComparisonChart data={brandComparisonData} currency={currency} />
         </ChartCard>
       </div>
 

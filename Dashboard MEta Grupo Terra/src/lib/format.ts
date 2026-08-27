@@ -1,15 +1,3 @@
-const currencyFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-const currencyPreciseFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 2,
-});
-
 const integerFormatter = new Intl.NumberFormat("es-EC");
 
 const percentFormatter = new Intl.NumberFormat("es-EC", {
@@ -17,12 +5,46 @@ const percentFormatter = new Intl.NumberFormat("es-EC", {
   minimumFractionDigits: 2,
 });
 
-export function formatCurrency(value: number): string {
-  return currencyFormatter.format(value);
+const currencyFormatters = new Map<string, Intl.NumberFormat>();
+const currencyPreciseFormatters = new Map<string, Intl.NumberFormat>();
+
+function getCurrencyFormatter(currency: string): Intl.NumberFormat {
+  let formatter = currencyFormatters.get(currency);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("es-EC", { style: "currency", currency, maximumFractionDigits: 0 });
+    currencyFormatters.set(currency, formatter);
+  }
+  return formatter;
 }
 
-export function formatCurrencyPrecise(value: number): string {
-  return currencyPreciseFormatter.format(value);
+function getCurrencyPreciseFormatter(currency: string): Intl.NumberFormat {
+  let formatter = currencyPreciseFormatters.get(currency);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat("es-EC", { style: "currency", currency, maximumFractionDigits: 2 });
+    currencyPreciseFormatters.set(currency, formatter);
+  }
+  return formatter;
+}
+
+/**
+ * `currency` es el código ISO de 3 letras (USD, COP, PEN, ...) de la cuenta
+ * publicitaria dueña del dato que se está mostrando — nunca asumir USD para
+ * todo el dashboard, cada cuenta de Meta tiene su propia moneda configurada.
+ */
+export function formatCurrency(value: number, currency = "USD"): string {
+  try {
+    return getCurrencyFormatter(currency).format(value);
+  } catch {
+    return getCurrencyFormatter("USD").format(value);
+  }
+}
+
+export function formatCurrencyPrecise(value: number, currency = "USD"): string {
+  try {
+    return getCurrencyPreciseFormatter(currency).format(value);
+  } catch {
+    return getCurrencyPreciseFormatter("USD").format(value);
+  }
 }
 
 export function formatInteger(value: number): string {

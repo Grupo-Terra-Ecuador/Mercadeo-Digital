@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { getSystemUserToken } from "./config";
+import { getSystemUserTokens } from "./config";
 
 const TOKEN_COOKIE = "meta_access_token";
 const STATE_COOKIE = "meta_oauth_state";
@@ -51,15 +51,22 @@ export async function readAndClearOauthStateCookie(): Promise<string | null> {
 
 export type TokenSource = "system_user" | "oauth";
 
+export interface ActiveToken {
+  token: string;
+  source: TokenSource;
+}
+
 /**
- * Token activo para llamar a la Graph API: prioriza el Token de Usuario del
- * Sistema (META_SYSTEM_USER_TOKEN, permanente) sobre la cookie de sesión de
- * "Conectar con Meta" (OAuth, expira ~60 días).
+ * Todos los tokens activos para llamar a la Graph API — normalmente uno por negocio de
+ * Meta conectado (META_SYSTEM_USER_TOKEN, META_SYSTEM_USER_TOKEN_2, ...). Si no hay
+ * ninguno configurado, cae a la cookie de sesión de "Conectar con Meta" (OAuth).
  */
-export async function getActiveAccessToken(): Promise<{ token: string; source: TokenSource } | null> {
-  const systemToken = getSystemUserToken();
-  if (systemToken) return { token: systemToken, source: "system_user" };
+export async function getActiveAccessTokens(): Promise<ActiveToken[]> {
+  const systemTokens = getSystemUserTokens();
+  if (systemTokens.length > 0) {
+    return systemTokens.map((token) => ({ token, source: "system_user" as const }));
+  }
 
   const cookieToken = await getAccessTokenCookie();
-  return cookieToken ? { token: cookieToken, source: "oauth" } : null;
+  return cookieToken ? [{ token: cookieToken, source: "oauth" }] : [];
 }

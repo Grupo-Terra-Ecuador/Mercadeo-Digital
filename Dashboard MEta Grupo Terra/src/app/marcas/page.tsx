@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getAccountById, getFilteredCampaigns, getInsightsForCampaigns } from "@/lib/selectors";
+import { getAccountById, getFilteredCampaigns, getInsightsForCampaigns, resolveCurrency } from "@/lib/selectors";
 import { calcCostPerResult, calcCtr, groupInsightsByCampaign } from "@/lib/metrics";
 import { formatCurrency, formatCurrencyPrecise, formatInteger, formatPercent } from "@/lib/format";
 import { useDashboardData } from "@/store/dashboard-data-context";
@@ -19,6 +19,7 @@ interface BrandRow {
   name: string;
   color: string;
   accountName: string;
+  currency: string;
   totalCampaigns: number;
   activeCampaigns: number;
   spend: number;
@@ -62,6 +63,7 @@ export default function MarcasPage() {
         name: brand.name,
         color: brand.color,
         accountName: getAccountById(accounts, brand.accountId)?.name ?? "—",
+        currency: getAccountById(accounts, brand.accountId)?.currency ?? "USD",
         totalCampaigns: brandCampaigns.length,
         activeCampaigns: brandCampaigns.filter((c) => c.status === "ACTIVE").length,
         spend: totals.spend,
@@ -76,6 +78,7 @@ export default function MarcasPage() {
 
   const chartData = useMemo(() => rows.map((r) => ({ name: r.name, value: r.spend, color: r.color })), [rows]);
   const shareData = useMemo(() => rows.map((r) => ({ segment: r.name, share: r.share })), [rows]);
+  const { currency, mixed: mixedCurrency } = useMemo(() => resolveCurrency(accounts, campaigns), [accounts, campaigns]);
 
   const columns: DataTableColumn<BrandRow>[] = [
     {
@@ -97,7 +100,7 @@ export default function MarcasPage() {
       sortValue: (r) => r.activeCampaigns,
       render: (r) => `${r.activeCampaigns} / ${r.totalCampaigns}`,
     },
-    { key: "spend", header: "Inversión", align: "right", sortValue: (r) => r.spend, render: (r) => formatCurrency(r.spend) },
+    { key: "spend", header: "Inversión", align: "right", sortValue: (r) => r.spend, render: (r) => formatCurrency(r.spend, r.currency) },
     {
       key: "results",
       header: "Resultados",
@@ -110,7 +113,7 @@ export default function MarcasPage() {
       header: "Costo/Resultado",
       align: "right",
       sortValue: (r) => r.costPerResult,
-      render: (r) => formatCurrencyPrecise(r.costPerResult),
+      render: (r) => formatCurrencyPrecise(r.costPerResult, r.currency),
     },
     { key: "ctr", header: "CTR", align: "right", sortValue: (r) => r.ctr, render: (r) => formatPercent(r.ctr) },
     {
@@ -127,6 +130,12 @@ export default function MarcasPage() {
       <PageHeader title="Marcas" description="Rendimiento agregado por marca dentro de las cuentas publicitarias conectadas." />
 
       {error && <ErrorBanner message={error} />}
+      {mixedCurrency && (
+        <ErrorBanner
+          tone="warning"
+          message="Estas marcas pertenecen a cuentas con monedas distintas — el gráfico y el % del total no se pueden sumar con precisión entre monedas."
+        />
+      )}
 
       {rows.length === 0 ? (
         <EmptyState />
@@ -134,7 +143,7 @@ export default function MarcasPage() {
         <>
           <div className="grid grid-cols-1 gap-3.5 xl:grid-cols-2">
             <ChartCard title="Inversión por marca" subtitle="Comparativo del gasto total en el período seleccionado">
-              <BrandComparisonChart data={chartData} />
+              <BrandComparisonChart data={chartData} currency={currency} />
             </ChartCard>
             <ChartCard title="Participación de inversión" subtitle="Porcentaje del gasto total que representa cada marca">
               <DonutBreakdown data={shareData} />

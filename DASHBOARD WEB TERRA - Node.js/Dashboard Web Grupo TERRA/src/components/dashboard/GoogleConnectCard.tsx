@@ -12,7 +12,7 @@ export default function GoogleConnectCard() {
   const [siteUrl, setSiteUrl] = useState("");
 
   return (
-    <div id="googleConnectCard" className="card rounded-terra border border-border bg-surface p-[18px] shadow-[inset_0_1px_0_rgba(255,255,255,.03)]">
+    <div id="googleConnectCard">
       <div className="cardtitle mb-2.5 flex items-center gap-1.5 text-[13px] font-black text-text">
         Conectar con Google Analytics y Search Console (beta)
       </div>

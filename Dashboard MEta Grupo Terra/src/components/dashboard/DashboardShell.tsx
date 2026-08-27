@@ -3,13 +3,13 @@ import TopBar from "@/components/layout/TopBar";
 import Sidebar from "@/components/layout/Sidebar";
 import FilterBar from "@/components/dashboard/FilterBar";
 import { isOAuthConfigured } from "@/lib/meta/config";
-import { getActiveAccessToken } from "@/lib/meta/session";
+import { getActiveAccessTokens } from "@/lib/meta/session";
 import { DashboardDataProvider } from "@/store/dashboard-data-context";
 import type { MetaConnectionStatus } from "@/components/layout/TopBar";
 
 async function resolveConnectionStatus(): Promise<MetaConnectionStatus> {
-  const active = await getActiveAccessToken();
-  if (active) return "connected";
+  const active = await getActiveAccessTokens();
+  if (active.length > 0) return "connected";
   return isOAuthConfigured() ? "disconnected" : "not_configured";
 }
 

@@ -6,9 +6,10 @@ import { formatCompact, formatCurrencyPrecise } from "@/lib/format";
 
 interface Props {
   data: Array<{ name: string; value: number; color: string }>;
+  currency?: string;
 }
 
-export default function BrandComparisonChart({ data }: Props) {
+export default function BrandComparisonChart({ data, currency = "USD" }: Props) {
   return (
     <ResponsiveContainer width="100%" height={Math.max(220, data.length * 42)}>
       <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
@@ -18,7 +19,7 @@ export default function BrandComparisonChart({ data }: Props) {
         <Tooltip
           contentStyle={TOOLTIP_STYLE}
           cursor={{ fill: "rgba(255,255,255,0.03)" }}
-          formatter={(value) => [formatCurrencyPrecise(Number(value ?? 0)), "Inversión"]}
+          formatter={(value) => [formatCurrencyPrecise(Number(value ?? 0), currency), "Inversión"]}
         />
         <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={20}>
           {data.map((entry) => (

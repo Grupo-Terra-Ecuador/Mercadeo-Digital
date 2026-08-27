@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckCircle2, AlertTriangle, Plug, Unplug, KeyRound } from "lucide-react";
 import { isOAuthConfigured } from "@/lib/meta/config";
 import { getAdAccounts, type MetaAdAccount } from "@/lib/meta/graph-client";
-import { getActiveAccessToken } from "@/lib/meta/session";
+import { getActiveAccessTokens, type ActiveToken } from "@/lib/meta/session";
 import PageHeader from "@/components/ui/PageHeader";
 import ChartCard from "@/components/ui/ChartCard";
 
@@ -20,20 +20,31 @@ interface PageProps {
   searchParams: Promise<{ connected?: string; disconnected?: string; error?: string }>;
 }
 
+interface TokenGroup {
+  active: ActiveToken;
+  index: number;
+  accounts: MetaAdAccount[];
+  error: string | null;
+}
+
 export default async function ConexionesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const active = await getActiveAccessToken();
+  const activeTokens = await getActiveAccessTokens();
   const oauthConfigured = isOAuthConfigured();
 
-  let accounts: MetaAdAccount[] = [];
-  let accountsError: string | null = null;
-  if (active) {
-    try {
-      accounts = await getAdAccounts(active.token);
-    } catch (err) {
-      accountsError = err instanceof Error ? err.message : "No se pudieron obtener las cuentas publicitarias.";
-    }
-  }
+  const groups: TokenGroup[] = await Promise.all(
+    activeTokens.map(async (active, index) => {
+      try {
+        const accounts = await getAdAccounts(active.token);
+        return { active, index, accounts, error: null };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "No se pudieron obtener las cuentas publicitarias.";
+        return { active, index, accounts: [] as MetaAdAccount[], error: message };
+      }
+    })
+  );
+
+  const totalAccounts = groups.reduce((sum, g) => sum + g.accounts.length, 0);
 
   return (
     <div className="flex flex-col gap-5">
@@ -48,7 +59,7 @@ export default async function ConexionesPage({ searchParams }: PageProps) {
       {params.disconnected && <Banner tone="neutral" icon={Unplug} text="Se desconectó tu cuenta de Meta." />}
       {params.error && <Banner tone="error" icon={AlertTriangle} text={decodeURIComponent(params.error)} />}
 
-      {!active ? (
+      {activeTokens.length === 0 ? (
         <>
           <ChartCard title="Opción recomendada: Token de Usuario del Sistema" subtitle="Permanente, no requiere iniciar sesión cada vez">
             <p className="text-[13px] leading-relaxed text-muted">
@@ -82,29 +93,38 @@ export default async function ConexionesPage({ searchParams }: PageProps) {
             tone="success"
             icon={KeyRound}
             text={
-              active.source === "system_user"
-                ? "Conectado mediante Token de Usuario del Sistema (permanente)."
-                : "Conectado mediante sesión de Meta (expira periódicamente)."
+              groups.length === 1
+                ? groups[0].active.source === "system_user"
+                  ? "Conectado mediante Token de Usuario del Sistema (permanente)."
+                  : "Conectado mediante sesión de Meta (expira periódicamente)."
+                : `Conectado con ${groups.length} tokens (${groups.length} negocios de Meta distintos) — ${totalAccounts} cuenta${totalAccounts === 1 ? "" : "s"} publicitaria${totalAccounts === 1 ? "" : "s"} en total.`
             }
           />
 
-          {accountsError ? (
-            <ChartCard title="No se pudo leer tus cuentas" subtitle="El token puede haber expirado o perdido permisos">
-              <p className="text-[13px] leading-relaxed text-muted">{accountsError}</p>
-            </ChartCard>
-          ) : (
+          {groups.map((group) => (
             <ChartCard
-              title={`${accounts.length} cuenta${accounts.length === 1 ? "" : "s"} publicitaria${accounts.length === 1 ? "" : "s"} disponible${accounts.length === 1 ? "" : "s"}`}
-              subtitle="Estas son las cuentas de Meta a las que tiene acceso el token conectado"
+              key={group.index}
+              title={
+                groups.length > 1
+                  ? `Negocio ${group.index + 1}${group.accounts[0]?.businessName ? ` · ${group.accounts[0].businessName}` : ""}`
+                  : `${group.accounts.length} cuenta${group.accounts.length === 1 ? "" : "s"} publicitaria${group.accounts.length === 1 ? "" : "s"} disponible${group.accounts.length === 1 ? "" : "s"}`
+              }
+              subtitle={
+                group.active.source === "system_user"
+                  ? "Token de Usuario del Sistema (permanente)"
+                  : "Token de sesión personal (expira — habrá que renovarlo)"
+              }
             >
-              {accounts.length === 0 ? (
+              {group.error ? (
+                <p className="text-[13px] leading-relaxed text-muted">{group.error}</p>
+              ) : group.accounts.length === 0 ? (
                 <p className="text-[13px] text-muted">
                   Este token no tiene acceso a ninguna cuenta publicitaria todavía. Revisa en el Administrador
                   Comercial que se le haya asignado la cuenta correspondiente.
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
-                  {accounts.map((account) => (
+                  {group.accounts.map((account) => (
                     <div
                       key={account.id}
                       className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-surface-2 px-3.5 py-3"
@@ -123,7 +143,7 @@ export default async function ConexionesPage({ searchParams }: PageProps) {
                 </div>
               )}
             </ChartCard>
-          )}
+          ))}
 
           <ChartCard title="Próximo paso" subtitle="Qué falta para ver datos reales en el dashboard">
             <p className="text-[13px] leading-relaxed text-muted">
@@ -134,7 +154,7 @@ export default async function ConexionesPage({ searchParams }: PageProps) {
             </p>
           </ChartCard>
 
-          {active.source === "oauth" && (
+          {groups.some((g) => g.active.source === "oauth") && (
             <form action="/api/auth/meta/logout" method="post">
               <button
                 type="submit"

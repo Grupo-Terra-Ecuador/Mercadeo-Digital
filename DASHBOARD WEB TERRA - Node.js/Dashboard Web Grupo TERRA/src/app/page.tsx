@@ -1,6 +1,7 @@
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import Hero from "@/components/dashboard/Hero";
 import SettingsPanel from "@/components/dashboard/SettingsPanel";
+import ReportBrandingCard from "@/components/dashboard/ReportBrandingCard";
 import ModuleAccordion from "@/components/dashboard/ModuleAccordion";
 import ResumenSection from "@/components/sections/ResumenSection";
 import TraficoSection from "@/components/sections/TraficoSection";
@@ -18,6 +19,7 @@ export default function Home() {
     <DashboardShell>
       <Hero />
       <SettingsPanel />
+      <ReportBrandingCard />
 
       <ModuleAccordion id="resumen" title="Resumen tecnico" defaultOpen>
         <ResumenSection />

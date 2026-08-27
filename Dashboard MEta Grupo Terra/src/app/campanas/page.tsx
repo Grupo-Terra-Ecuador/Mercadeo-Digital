@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { AlertTriangle } from "lucide-react";
 import { useFiltersStore } from "@/store/filters-store";
-import { getFilteredCampaigns, getInsightsForCampaigns, getBrandById } from "@/lib/selectors";
+import { getAccountById, getFilteredCampaigns, getInsightsForCampaigns, getBrandById } from "@/lib/selectors";
 import {
   calcCostPerResult,
   calcCpc,
@@ -27,6 +27,7 @@ import DataTable, { type DataTableColumn } from "@/components/ui/DataTable";
 interface CampaignRow {
   campaign: Campaign;
   brandName: string;
+  currency: string;
   spend: number;
   reach: number;
   impressions: number;
@@ -41,7 +42,7 @@ interface CampaignRow {
 
 export default function CampanasPage() {
   const filters = useFiltersStore();
-  const { brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
+  const { accounts, brands, campaigns: allCampaigns, dailyInsights: allInsights, error } = useDashboardData();
 
   const campaigns = useMemo(() => getFilteredCampaigns(allCampaigns, filters), [allCampaigns, filters]);
   const insights = useMemo(
@@ -56,6 +57,7 @@ export default function CampanasPage() {
       return {
         campaign,
         brandName: getBrandById(brands, campaign.brandId)?.name ?? "—",
+        currency: getAccountById(accounts, campaign.accountId)?.currency ?? "USD",
         spend: t.spend,
         reach: t.reach,
         impressions: t.impressions,
@@ -68,7 +70,7 @@ export default function CampanasPage() {
         frequency: calcFrequency(t),
       };
     });
-  }, [campaigns, insights, brands]);
+  }, [campaigns, insights, brands, accounts]);
 
   const columns: DataTableColumn<CampaignRow>[] = [
     {
@@ -93,9 +95,9 @@ export default function CampanasPage() {
       key: "budget",
       header: "Presupuesto",
       sortValue: (r) => r.campaign.budgetAmount,
-      render: (r) => <BudgetCell campaign={r.campaign} />,
+      render: (r) => <BudgetCell campaign={r.campaign} currency={r.currency} />,
     },
-    { key: "spend", header: "Inversión", align: "right", sortValue: (r) => r.spend, render: (r) => formatCurrency(r.spend) },
+    { key: "spend", header: "Inversión", align: "right", sortValue: (r) => r.spend, render: (r) => formatCurrency(r.spend, r.currency) },
     { key: "reach", header: "Alcance", align: "right", sortValue: (r) => r.reach, render: (r) => formatInteger(r.reach) },
     {
       key: "impressions",
@@ -116,11 +118,11 @@ export default function CampanasPage() {
       header: "Costo/Resultado",
       align: "right",
       sortValue: (r) => r.costPerResult,
-      render: (r) => formatCurrencyPrecise(r.costPerResult),
+      render: (r) => formatCurrencyPrecise(r.costPerResult, r.currency),
     },
     { key: "ctr", header: "CTR", align: "right", sortValue: (r) => r.ctr, render: (r) => formatPercent(r.ctr) },
-    { key: "cpc", header: "CPC", align: "right", sortValue: (r) => r.cpc, render: (r) => formatCurrencyPrecise(r.cpc) },
-    { key: "cpm", header: "CPM", align: "right", sortValue: (r) => r.cpm, render: (r) => formatCurrencyPrecise(r.cpm) },
+    { key: "cpc", header: "CPC", align: "right", sortValue: (r) => r.cpc, render: (r) => formatCurrencyPrecise(r.cpc, r.currency) },
+    { key: "cpm", header: "CPM", align: "right", sortValue: (r) => r.cpm, render: (r) => formatCurrencyPrecise(r.cpm, r.currency) },
     {
       key: "frequency",
       header: "Frecuencia",
@@ -150,7 +152,7 @@ export default function CampanasPage() {
   );
 }
 
-function BudgetCell({ campaign }: { campaign: Campaign }) {
+function BudgetCell({ campaign, currency }: { campaign: Campaign; currency: string }) {
   if (campaign.budgetType === "none") {
     return <span className="text-muted-2">—</span>;
   }
@@ -158,7 +160,7 @@ function BudgetCell({ campaign }: { campaign: Campaign }) {
   if (campaign.budgetType === "daily") {
     return (
       <div>
-        <div className="whitespace-nowrap font-semibold text-text">{formatCurrency(campaign.budgetAmount)}/día</div>
+        <div className="whitespace-nowrap font-semibold text-text">{formatCurrency(campaign.budgetAmount, currency)}/día</div>
         <div className="text-[10px] font-medium text-muted-2">Diario</div>
       </div>
     );
@@ -169,11 +171,11 @@ function BudgetCell({ campaign }: { campaign: Campaign }) {
 
   return (
     <div className="min-w-[110px]">
-      <div className="whitespace-nowrap font-semibold text-text">{formatCurrency(campaign.budgetAmount)} total</div>
+      <div className="whitespace-nowrap font-semibold text-text">{formatCurrency(campaign.budgetAmount, currency)} total</div>
       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
         <div className="h-full rounded-full bg-accent" style={{ width: `${usedPct}%` }} />
       </div>
-      <div className="mt-0.5 text-[10px] font-medium text-muted-2">{formatCurrency(remaining)} restante</div>
+      <div className="mt-0.5 text-[10px] font-medium text-muted-2">{formatCurrency(remaining, currency)} restante</div>
     </div>
   );
 }

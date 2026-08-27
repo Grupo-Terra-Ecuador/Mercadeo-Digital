@@ -4,7 +4,12 @@ import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YA
 import { AXIS_TICK_STYLE, CHART_ACCENT, CHART_GRID, TOOLTIP_LABEL_STYLE, TOOLTIP_STYLE } from "@/lib/chart-colors";
 import { formatCompact, formatCurrencyPrecise, formatDateLong, formatDateShort } from "@/lib/format";
 
-export default function SpendTrendChart({ data }: { data: Array<{ date: string; spend: number }> }) {
+interface Props {
+  data: Array<{ date: string; spend: number }>;
+  currency?: string;
+}
+
+export default function SpendTrendChart({ data, currency = "USD" }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data} margin={{ top: 4, right: 8, left: -12, bottom: 0 }}>
@@ -21,7 +26,7 @@ export default function SpendTrendChart({ data }: { data: Array<{ date: string; 
           contentStyle={TOOLTIP_STYLE}
           labelStyle={TOOLTIP_LABEL_STYLE}
           labelFormatter={(label) => formatDateLong(String(label ?? ""))}
-          formatter={(value) => [formatCurrencyPrecise(Number(value ?? 0)), "Inversión"]}
+          formatter={(value) => [formatCurrencyPrecise(Number(value ?? 0), currency), "Inversión"]}
         />
         <Area type="monotone" dataKey="spend" stroke={CHART_ACCENT} strokeWidth={2} fill="url(#spendGradient)" />
       </AreaChart>

@@ -17,7 +17,7 @@ export default function Hero() {
     <section id="carga" className="hero relative mb-[18px] overflow-hidden rounded-[22px] border border-border-2 bg-gradient-to-br from-[#13203a] via-[#0f172a] to-[#1a1000] p-7 max-[900px]:rounded-2xl max-[900px]:p-[22px_18px]">
       <div className="pointer-events-none absolute -right-[90px] -top-[90px] h-[320px] w-[320px] rounded-full bg-[radial-gradient(circle,rgba(255,121,0,.28),transparent_66%)]" />
       <div className="eyebrow relative z-[1] mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-orange/30 bg-orange/[.11] px-[13px] py-1.5 text-[11px] font-black text-orange-2">
-        Version 15 - Datos automatizados GA4 y Search Console - navegacion activa - modulos dinamicos segun datos
+        Dashboard 1.0 BETA - Datos automatizados GA4 y Search Console - navegacion activa - modulos dinamicos segun datos
       </div>
       <h1 className="relative z-[1] mb-2 text-[30px] leading-[1.12] max-[900px]:text-[25px]">
         Dashboard de <span className="text-orange">analitica web tecnica</span>
