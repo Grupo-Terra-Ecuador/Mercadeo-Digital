@@ -4,7 +4,8 @@ Documento de continuidad. Objetivo: que cualquier persona (o una nueva sesion de
 memoria de esta conversacion) pueda entender que se hizo, por que, que queda pendiente y
 como seguir escalando el proyecto, sin tener que releer todo el historial de chat.
 
-Ultima actualizacion: ver fecha del ultimo commit relacionado a este archivo.
+Ultima actualizacion: 2026-09-29 (ver seccion 10, Bitacora de sesiones, para el detalle
+cronologico completo).
 
 ---
 
@@ -55,6 +56,24 @@ Dashboard Web Grupo TERRA/
 ├── .github/ (a nivel de repo Mercadeo-Digital/) CI + Dependabot
 ├── README.md / SECURITY.md / ESTADO_PROYECTO.md (este archivo)
 ```
+
+> **Aviso para no confundirse (repo `Mercadeo-Digital/`, agregado 2026-09-29):** dentro de
+> `Mercadeo-Digital/` (un nivel arriba de esta carpeta) han aparecido carpetas hermanas que
+> **no son este proyecto** y que se pueden confundir por el nombre parecido:
+> - `DASHBOARD WEB TERRA - Node.js/` — contiene unicamente una copia anidada
+>   (`Dashboard Web Grupo TERRA/` adentro). Parece una copia/backup manual, no el repo git
+>   real. El proyecto activo y versionado en git es **esta carpeta**
+>   (`Mercadeo-Digital/Dashboard Web Grupo TERRA/`), confirmada por `git status` (rama
+>   `main`, sincronizada con `origin`).
+> - `Dashboard MEta Grupo Terra/` (+ `Dashboard MEta Grupo Terra.zip`, ~370 MB) — es un
+>   **proyecto totalmente distinto**, en Next.js + TypeScript (`next.config.ts`,
+>   `tsconfig.json`), no un dashboard de analitica web GA4/Search Console. No confundir con
+>   este proyecto ni con el "Dashboard Meta Ads AGROTA" (que vive en otra carpeta, ver
+>   memoria del usuario / `ads-inteligence/`).
+>
+> Si una sesion futura no encuentra algo esperado, verificar primero que esta trabajando
+> sobre `Mercadeo-Digital/Dashboard Web Grupo TERRA/` y no sobre una de las carpetas de
+> arriba.
 
 ---
 
@@ -251,3 +270,49 @@ npx wrangler dev             # http://127.0.0.1:8787, usa .dev.vars para secreto
   proxima vez.
 - `legacy/dashboard_agrota_v14_11_menu_exportacion.html` — version original de un solo
   archivo, ya no se mantiene, solo como referencia historica.
+
+---
+
+## 10. Bitacora de sesiones
+
+Registro cronologico breve de cada sesion de trabajo, para trazabilidad. Cada entrada nueva
+se agrega al final; no se reescribe el historial previo.
+
+### 2026-08-16 — Migracion inicial + Fase A/B de IA
+
+- Diagnostico del archivo legado de un solo HTML y migracion completa a proyecto Vite
+  modular (ver secciones 1-4).
+- Corregidos los dos bugs reales de la seccion 4 (deteccion de encabezado "iOS", filtro de
+  fechas no respetado en la exportacion).
+- Implementada y desplegada la funcion de IA completa: Worker en Cloudflare
+  (`terra-dashboard-ai`), endpoint `/api/ai-insight`, secreto `ANTHROPIC_API_KEY`
+  configurado, boton "Generar diagnostico" en los 8 modulos del frontend. Verificado de
+  punta a punta con Playwright (CORS, validacion, UI, sin errores de JS).
+- Ajustado el mensaje de error para detectar especificamente "sin credito/facturacion" de
+  Anthropic (HTTP 402) y agregado `localhost:4173`/`127.0.0.1:4173` (modo preview) a
+  `ALLOWED_ORIGINS`.
+- Creado este documento (`ESTADO_PROYECTO.md`).
+- **Quedo pendiente (sigue igual a la fecha de esta bitacora):** agregar creditos en
+  `console.anthropic.com -> Billing` para poder generar un diagnostico real.
+
+### 2026-09-29 — Verificacion de continuidad tras una pausa
+
+- El usuario reporto "no puedo visualizar el proyecto" (sin mas detalle inicial). Se
+  confirmo por pregunta directa que se referia a **este proyecto** (Dashboard Grupo TERRA),
+  no al Dashboard Meta Ads AGROTA (otro proyecto en curso del usuario, carpeta distinta).
+- Diagnostico: no habia ningun servidor de desarrollo corriendo (causa mas probable de "no
+  veo nada" — sin `npm run dev` activo, no hay nada que visualizar en el navegador).
+- Se detecto que dentro de `Mercadeo-Digital/` aparecieron carpetas hermanas nuevas que no
+  son este proyecto (`DASHBOARD WEB TERRA - Node.js/`, `Dashboard MEta Grupo Terra/` +
+  su `.zip`) — documentado en la seccion 2 para evitar confusion en sesiones futuras. El
+  repo git activo de este proyecto sigue siendo `Mercadeo-Digital/Dashboard Web Grupo TERRA/`
+  (`git status`: rama `main`, limpia, sincronizada con `origin`).
+- Verificado que `node_modules` y `.env.local` (con `VITE_GOOGLE_CLIENT_ID` y
+  `VITE_AI_WORKER_URL`) seguian intactos.
+- Se levanto `npm run dev` (puerto 5173) y se confirmo con Playwright: HTTP 200, titulo
+  correcto, hero y menu lateral visibles, **cero errores de consola y cero excepciones de
+  JS**. Diagnostico: el codigo del proyecto esta sano; el problema era unicamente que no
+  habia servidor corriendo.
+- No se toco codigo de la aplicacion en esta sesion, solo verificacion y esta bitacora.
+- **Pendientes sin cambios respecto a la seccion 7** (el bloqueante de creditos de
+  Anthropic sigue siendo el unico paso real pendiente para ver un diagnostico de IA real).
